@@ -290,4 +290,4 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
     note_phrase_matches = _extract_values_from_notes(note_dicts, phrase_type, phrases, note_keyword, ignore_punctuation)
     _write_csv_output(note_phrase_matches, note_keyword, output_filename)
 
-run_regex('test_deidentified_rpdr_format.txt','patient', 'output.csv')
+#run_regex('test_deidentified_rpdr_format.txt','patient', 'output.csv')
