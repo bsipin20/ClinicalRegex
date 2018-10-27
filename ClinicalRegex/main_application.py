@@ -37,6 +37,10 @@ class MainApplication(tk.Frame):
                 self.patient_key = self.patient_id_entry.get()
             self.refresh_viewer(output_fname)
 
+    def on_choose_num_keywords(self):
+        pass
+
+
     def on_run_regex(self): 
         if not self.data_model.input_fname:
             # Warning
@@ -351,6 +355,18 @@ class MainApplication(tk.Frame):
         self.patient_id_entry.grid(column=1, row=2, sticky='e')
 
         self.hide_regex_options()
+
+        # Number of keywords button
+        num_keywords_button = tk.Button(right_options_frame, text='', width=16, command=self.on_choose_num_keywords,font=labelfont)
+        num_keywords_button.grid(column=0, row=1, sticky='sw')
+
+
+        # Number of keywords input text box
+
+        self.regex_label = tk.Entry(right_options_frame,font=labelfont)
+        self.regex_label.insert(0)
+        self.regex_label.grid(column=1,row=1,sticky='se')
+
 
         # Regex text box
         text_regex_frame = tk.Frame(right_frame, borderwidth=1, relief="sunken")
