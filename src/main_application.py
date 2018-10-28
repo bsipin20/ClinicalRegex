@@ -38,9 +38,32 @@ class MainApplication(tk.Frame):
                 self.patient_key = self.patient_id_entry.get()
             self.refresh_viewer(output_fname)
 
-    def on_choose_num_keywords(self):
-        #num_boxes_to_make
-        pass
+    def on_choose_num_keywords(self,event=None):
+        # Right textbox container
+
+        left_bg_color = 'lightblue1'
+        right_bg_color = 'azure'
+        boldfont = font.Font(size=16, family='Open Sans', weight='bold')
+        textfont = font.Font(family='Roboto', size=15)
+
+
+        ann_text = tk.Label(self.entry_frame, text='annotated value', font=boldfont, bg=right_bg_color)
+        ann_text.grid(column=0, row=0, sticky='ws')
+
+        ann_button = tk.Button(self.entry_frame, text='save', width=8, command=self.on_save_annotation)
+        ann_button.grid(column=0, row=2, sticky='nw')
+        
+  
+        # num boxes to make 
+        num_boxes_to_make = self.num_keywords_entry.get()
+        num_boxes_to_make = int(num_boxes_to_make)
+        print(num_boxes_to_make)
+
+
+
+#        del self.var_names_of_textbox[0]
+
+#        for box in range(num_boxes_to_make):
 
 
     def on_run_regex(self): 
@@ -363,9 +386,9 @@ class MainApplication(tk.Frame):
         num_keywords_button.grid(column=0, row=1, sticky='sw')
 
         # Number of keywords input text box
-        self.regex_label = tk.Entry(right_options_frame,font=labelfont)
-        self.regex_label.insert(0,"")
-        self.regex_label.grid(column=1,row=1,sticky='se')
+        self.regex_label_ = tk.Entry(right_options_frame,font=labelfont)
+        self.regex_label_.insert(0,"")
+        self.regex_label_.grid(column=1,row=1,sticky='se')
 
         # Regex text box
         text_regex_frame = tk.Frame(right_frame, borderwidth=1, relief="sunken")
