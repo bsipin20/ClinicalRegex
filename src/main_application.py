@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import font, filedialog, messagebox
+from tkinter import font, filedialog, messagebox,ttk
 from model import DataModel
 from extract_values import run_regex
 import pandas as pd
@@ -18,6 +18,10 @@ class MainApplication(tk.Frame):
         self.note_key = RPDR_NOTE_KEYWORD
         self.patient_key = RPDR_PATIENT_KEYWORD
         self.checkvar = False
+        self.var_names_of_textbox = ["one","two","three","four","five","six","seven","eight","nine"]
+        self.entry_annotate = dict()
+        self.determine_annotated()
+        self.made_boxes = False
 
     # Set up button click methods
     def on_select_file(self):
@@ -38,8 +42,12 @@ class MainApplication(tk.Frame):
                 self.patient_key = self.patient_id_entry.get()
             self.refresh_viewer(output_fname)
 
-    def on_choose_num_keywords(self,event=None):
+    def delete_b(self):
+        self.pack_forget()
+
+    def on_choose_num_keywords(self,eventobject):
         # Right textbox container
+
 
         left_bg_color = 'lightblue1'
         right_bg_color = 'azure'
@@ -47,23 +55,76 @@ class MainApplication(tk.Frame):
         textfont = font.Font(family='Roboto', size=15)
 
 
-        ann_text = tk.Label(self.entry_frame, text='annotated value', font=boldfont, bg=right_bg_color)
-        ann_text.grid(column=0, row=0, sticky='ws')
+        #ann_text = tk.Label(self.entry_frame, text='annotated value', font=boldfont, bg=right_bg_color)
+        #ann_text.grid(column=0, row=0, sticky='ws')
 
-        ann_button = tk.Button(self.entry_frame, text='save', width=8, command=self.on_save_annotation)
-        ann_button.grid(column=0, row=2, sticky='nw')
+        #ann_button = tk.Button(self.entry_frame, text='save', width=8, command=self.on_save_annotation)
+        #ann_button.grid(column=0, row=2, sticky='nw')
         
   
         # num boxes to make 
-        num_boxes_to_make = self.num_keywords_entry.get()
-        num_boxes_to_make = int(num_boxes_to_make)
-        print(num_boxes_to_make)
+        num_boxes_to_make = eventobject.widget.get()
+
+        for item in self.annotated_values_frame.winfo_children():
+            item.grid_remove()
+
+        self.show_widgets(num_boxes_to_make)
+
+
+       
+    def determine_annotated(self):
+        # Right textbox container
+
+        left_bg_color = 'lightblue1'
+        right_bg_color = 'azure'
+        boldfont = font.Font(size=16, family='Open Sans', weight='bold')
+        textfont = font.Font(family='Roboto', size=15)
+
+       # Number of keywords button
+        tk.Entry(self.annotated_values_frame)
+        #tk.Entry(self.annotated_values_frame).grid(row=1,column=5,sticky="se")
+        #tk.Entry(self.annotated_values_frame).grid(row=1,column=6,sticky="se")
+        #tk.Entry(self.annotated_values_frame).grid(row=1,column=7,sticky="se")
+        #tk.Entry(self.annotated_values_frame).grid(row=1,column=8,sticky="se")
+        #tk.Entry(self.annotated_values_frame).grid(row=1,column=9,sticky="se")
+
+        combo = ttk.Combobox(self.annotated_values_frame,values=(1,2,3))
+        combo.grid(column=0,row=0,sticky="se")
+        combo.bind('<<ComboboxSelected>>',self.on_choose_num_keywords)
+
+        #num_keywords_button = tk.Button(self.right_options_frame, text='Number of Keywords', width=16,font=textfont,command=self.on_choose_num_keywords)
+        #num_keywords_button.grid(column=0, row=1, sticky='sw')
+
+        # Number of keywords input text box
+        #self.num_keywords_entry = tk.Entry(self.right_options_frame,font=textfont)
+        #self.num_keywords_entry.insert(0,"")
+        #self.num_keywords_entry.grid(column=1,row=1,sticky='se')
+
+
+    def show_widgets(self,upto_widgetposition):
+
+        for item in self.annotated_values_frame.winfo_children()[:int(upto_widgetposition)]:
+            item.grid()
 
 
 
-#        del self.var_names_of_textbox[0]
 
+
+
+#        # num boxes to make 
+#        num_boxes_to_make = num_keywords_entry.get()
+#        num_boxes_to_make = int(num_boxes_to_make)
+#
+#        self.entry_annotate.clear()
 #        for box in range(num_boxes_to_make):
+#            key_name = self.var_names_of_textbox[box]
+#
+#            self.entry_annotate[key_name] = 'yo'
+#            self.entry_annotate[key_name] = tk.Entry(self.entry_frame,font=textfont,width=2)
+#            self.entry_annotate[key_name].grid(column=box,row=1,sticky='w')
+#            self.entry_annotate[key_name]
+
+
 
 
     def on_run_regex(self): 
@@ -206,7 +267,9 @@ class MainApplication(tk.Frame):
         self.note_key_entry.grid()
         self.patient_id_label.grid()
         self.patient_id_entry.grid()
-
+    
+    def create_right_frame(self,root):
+        root
     def setup_interface(self, root):
         # Define fonts
         titlefont = font.Font(family='Open Sans', size=18, weight='bold')
@@ -351,46 +414,37 @@ class MainApplication(tk.Frame):
         self.regex_label.grid(column=1, row=1, sticky='se')
 
         # Right regex options container
-        right_options_frame = tk.Frame(right_frame, bg=right_bg_color)
-        right_options_frame.grid(column=0, row=1, rowspan=2, padx=10, sticky='nsew')
-        right_options_frame.grid_propagate(False)
-        right_options_frame.grid_columnconfigure(0, weight=1)
-        right_options_frame.grid_columnconfigure(1, weight=1)
-        right_options_frame.grid_rowconfigure(0, weight=1)
-        right_options_frame.grid_rowconfigure(1, weight=1)
-        right_options_frame.grid_rowconfigure(2, weight=1)
+        self.right_options_frame = tk.Frame(right_frame, bg=right_bg_color)
+        self.right_options_frame.grid(column=0, row=1, rowspan=2, padx=10, sticky='nsew')
+        self.right_options_frame.grid_propagate(False)
+        self.right_options_frame.grid_columnconfigure(0, weight=1)
+        self.right_options_frame.grid_columnconfigure(1, weight=1)
+        self.right_options_frame.grid_rowconfigure(0, weight=1)
+        self.right_options_frame.grid_rowconfigure(1, weight=1)
+        self.right_options_frame.grid_rowconfigure(2, weight=1)
 
         checkbox_var = tk.IntVar()
-        self.rpdr_checkbox = tk.Checkbutton(right_options_frame, padx=10, anchor='e', font=labelfont, text='RPDR format', variable=checkbox_var, bg=right_bg_color)
+        self.rpdr_checkbox = tk.Checkbutton(self.right_options_frame, padx=10, anchor='e', font=labelfont, text='RPDR format', variable=checkbox_var, bg=right_bg_color)
         self.rpdr_checkbox.var = checkbox_var
         self.rpdr_checkbox.select()
         self.rpdr_checkbox.bind("<Button-1>", lambda event: self.on_checkbox_click(event, self.rpdr_checkbox))
         self.rpdr_checkbox.grid(column=1, row=0, sticky='e')
 
-        self.note_key_entry_label = tk.Label(right_options_frame, text='Note column key: ', font=labelfont, bg=right_bg_color)
+        self.note_key_entry_label = tk.Label(self.right_options_frame, text='Note column key: ', font=labelfont, bg=right_bg_color)
         self.note_key_entry_label.grid(column=0, row=1, sticky='e')
 
-        self.note_key_entry = tk.Entry(right_options_frame, font=labelfont)
+        self.note_key_entry = tk.Entry(self.right_options_frame, font=labelfont)
         self.note_key_entry.grid(column=1, row=1, sticky='e')
 
-        self.patient_id_label = tk.Label(right_options_frame, text='Patient ID column key: ', font=labelfont, bg=right_bg_color)
+        self.patient_id_label = tk.Label(self.right_options_frame, text='Patient ID column key: ', font=labelfont, bg=right_bg_color)
         self.patient_id_label.grid(column=0, row=2, sticky='e')
 
-        self.patient_id_entry = tk.Entry(right_options_frame, font=labelfont)
+        self.patient_id_entry = tk.Entry(self.right_options_frame, font=labelfont)
         self.patient_id_entry.grid(column=1, row=2, sticky='e')
 
         self.hide_regex_options()
 
-        # Number of keywords button
-        num_keywords_button = tk.Button(right_options_frame, text='Number of Keywords', width=16, command=self.on_choose_num_keywords,font=labelfont)
-        num_keywords_button.grid(column=0, row=1, sticky='sw')
-
-        # Number of keywords input text box
-        self.regex_label_ = tk.Entry(right_options_frame,font=labelfont)
-        self.regex_label_.insert(0,"")
-        self.regex_label_.grid(column=1,row=1,sticky='se')
-
-        # Regex text box
+                # Regex text box
         text_regex_frame = tk.Frame(right_frame, borderwidth=1, relief="sunken")
         text_regex_frame.grid_rowconfigure(0, weight=1)
         text_regex_frame.grid_rowconfigure(1, weight=1)
@@ -405,18 +459,35 @@ class MainApplication(tk.Frame):
         self.regex_text.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text, self.original_regex_text))
 
         # Right textbox container
-        entry_frame = tk.Frame(right_frame, bg=right_bg_color)
-        entry_frame.grid(column=0, row=6, rowspan=2, padx=10, pady=10, sticky='nsew')
-        entry_frame.grid_propagate(False)
-        entry_frame.grid_rowconfigure(0, weight=1)
-        entry_frame.grid_rowconfigure(1, weight=1)
-        entry_frame.grid_rowconfigure(2, weight=1)
+        self.entry_frame = tk.Frame(right_frame, bg=right_bg_color)
+        self.entry_frame.grid(column=0, row=6, rowspan=2, padx=10, pady=10, sticky='nsew')
+        self.entry_frame.grid_propagate(False)
+        self.entry_frame.grid_rowconfigure(0, weight=1)
+        self.entry_frame.grid_rowconfigure(1, weight=1)
+        self.entry_frame.grid_rowconfigure(2, weight=1)
 
-        ann_text = tk.Label(entry_frame, text='Annotated Value', font=boldfont, bg=right_bg_color)
+        save_buttom_frame = tk.Frame(right_frame,bg=right_bg_color)
+        save_buttom_frame.grid(column=0,row=9,rowspan=2,padx=10,pady=10,sticky='nsew')
+        save_buttom_frame.grid_propagate(False)
+        save_buttom_frame.grid_rowconfigure(0, weight=1)
+        save_buttom_frame.grid_rowconfigure(1, weight=1)
+        save_buttom_frame.grid_rowconfigure(2, weight=1)
+
+
+        ann_text = tk.Label(save_buttom_frame, text='Annotated Value', font=boldfont, bg=right_bg_color)
         ann_text.grid(column=0, row=0, sticky='ws')
 
-        self.ann_textbox = tk.Entry(entry_frame, font=textfont)
-        self.ann_textbox.grid(column=0, row=1, sticky='e')
+        #self.ann_textbox = tk.Entry(self.entry_frame, font=textfont)
+        #self.ann_textbox.grid(column=0, row=1, sticky='e')
 
-        ann_button = tk.Button(entry_frame, text='Save', width=8, command=self.on_save_annotation)
+        ann_button = tk.Button(save_buttom_frame, text='Save', width=8, command=self.on_save_annotation)
         ann_button.grid(column=0, row=2, sticky='nw')
+
+        #TODO get rid of this
+        self.annotated_values_frame = tk.Frame(right_frame,bg=right_bg_color)
+        self.annotated_values_frame.grid(column=0,row=7,rowspan=2,padx=0,pady=0,sticky='nsew')
+        self.entry_frame.grid_propagate(False)
+
+
+
+        
