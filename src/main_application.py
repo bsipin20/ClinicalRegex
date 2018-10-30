@@ -20,7 +20,7 @@ class MainApplication(tk.Frame):
         self.checkvar = False
         self.var_names_of_textbox = ["one","two","three","four","five","six","seven","eight","nine"]
         self.entry_annotate = dict()
-        self.determine_annotated()
+        #self.determine_annotated()
         self.made_boxes = False
 
     # Set up button click methods
@@ -45,89 +45,163 @@ class MainApplication(tk.Frame):
     def delete_b(self):
         self.pack_forget()
 
+    def delete_remaining(self):
+        for item in self.entry_frame.winfo_children():
+            item.grid_remove()
+
+    def delete_remaining_text(self):
+        for item in self.text_regex_frame.winfo_children():
+            item.grid_remove()
+ 
+
     def on_choose_num_keywords(self,eventobject):
         # Right textbox container
 
-
         left_bg_color = 'lightblue1'
         right_bg_color = 'azure'
         boldfont = font.Font(size=16, family='Open Sans', weight='bold')
         textfont = font.Font(family='Roboto', size=15)
-
-
-        #ann_text = tk.Label(self.entry_frame, text='annotated value', font=boldfont, bg=right_bg_color)
-        #ann_text.grid(column=0, row=0, sticky='ws')
-
-        #ann_button = tk.Button(self.entry_frame, text='save', width=8, command=self.on_save_annotation)
-        #ann_button.grid(column=0, row=2, sticky='nw')
+        num_boxes = eventobject.widget.get()
+        self.delete_remaining()
         
-  
-        # num boxes to make 
-        num_boxes_to_make = eventobject.widget.get()
-
-        for item in self.annotated_values_frame.winfo_children():
-            item.grid_remove()
-
-        self.show_widgets(num_boxes_to_make)
+        if num_boxes == "1":
+            self.ann_textbox1= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="skyblue",highlightthickness=0,borderwidth=2)
+            self.ann_textbox1.grid(column=0, row=0, sticky='nsew',padx=10,pady=10)
 
 
-       
-    def determine_annotated(self):
+        if num_boxes == "2":
+            self.ann_textbox1= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="skyblue",highlightthickness=0,borderwidth=2)
+            self.ann_textbox1.grid(column=0, row=0, sticky='nsew',padx=10,pady=10)
+
+            self.ann_textbox2= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="wheat1",highlightthickness=0,borderwidth=2)
+            self.ann_textbox2.grid(column=1, row=0, sticky='nsew',padx=10,pady=10)
+
+        if num_boxes == "3":
+
+            self.ann_textbox1= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="skyblue",highlightthickness=0,borderwidth=2)
+            self.ann_textbox1.grid(column=0, row=0, sticky='nsew',padx=10,pady=10)
+ 
+            self.ann_textbox2= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="wheat1")
+            self.ann_textbox2.grid(column=1, row=0, sticky='nsew',padx=10,pady=10)
+
+            self.ann_textbox3= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="DarkSeaGreen1")
+            self.ann_textbox3.grid(column=2, row=0, sticky='nsew',padx=10,pady=10)
+
+        if num_boxes == "4":
+
+            self.ann_textbox1= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="skyblue",highlightthickness=0,borderwidth=2)
+            self.ann_textbox1.grid(column=0, row=0, sticky='nsew',padx=10,pady=10)
+ 
+            self.ann_textbox2= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="wheat1")
+            self.ann_textbox2.grid(column=1, row=0, sticky='nsew',padx=10,pady=10)
+
+            self.ann_textbox3= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="DarkSeaGreen1")
+            self.ann_textbox3.grid(column=2, row=0, sticky='nsew',padx=10,pady=10)
+
+            self.ann_textbox4= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="pink1")
+            self.ann_textbox4.grid(column=3, row=0, sticky='nsew',padx=10,pady=10)
+
+
+    
+        self.determine_annotated(num_boxes)
+
+
+    def determine_annotated(self,num_boxes):
         # Right textbox container
 
-        left_bg_color = 'lightblue1'
-        right_bg_color = 'azure'
+
+
+        self.original_regex_text = "Type comma-separated keywords here."
+        self.delete_remaining_text()
+
+        titlefont = font.Font(family='Open Sans', size=18, weight='bold')
         boldfont = font.Font(size=16, family='Open Sans', weight='bold')
         textfont = font.Font(family='Roboto', size=15)
+        labelfont = font.Font(family='Roboto', size=11)
+        smallfont = font.Font(family='Roboto', size=13)
+
+        if num_boxes == "1":
+
+            self.regex_text1 = tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="skyblue")
+            self.regex_text1.insert(tk.END, self.original_regex_text)
+            self.regex_text1.grid(column=0, row=0,padx=10,pady=10,rowspan=2,sticky='nsew')
+            self.regex_text1.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text1, self.original_regex_text))
+
+        if num_boxes == "2":
+            self.regex_text1 = tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="skyblue")
+ 
+            self.regex_text1.insert(tk.END, self.original_regex_text)
+            self.regex_text1.grid(column=0, row=0, sticky='nsew')
+            self.regex_text1.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text1, self.original_regex_text))
+
+            self.regex_text2 = tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="wheat1")
+            self.regex_text2.insert(tk.END, self.original_regex_text)
+            self.regex_text2.grid(column=1, row=0, sticky='nsew')
+            self.regex_text2.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text2, self.original_regex_text))
+
+        if num_boxes == "3":
+            self.regex_text1 = tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="skyblue")
+ 
+            self.regex_text1.insert(tk.END, self.original_regex_text)
+            self.regex_text1.grid(column=0, row=0, sticky='nsew')
+            self.regex_text1.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text1, self.original_regex_text))
+
+            self.regex_text2 = tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="wheat1")
+            self.regex_text2.insert(tk.END, self.original_regex_text)
+            self.regex_text2.grid(column=1, row=0, sticky='nsew')
+            self.regex_text2.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text2, self.original_regex_text))
+
+            self.regex_text3 = tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="DarkSeaGreen1")
+
+            self.regex_text3.insert(tk.END, self.original_regex_text)
+            self.regex_text3.grid(column=2, row=0, sticky='nsew')
+            self.regex_text3.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text3, self.original_regex_text))
+
+        if num_boxes == "4":
+            self.regex_text1 = tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="skyblue")
+ 
+            self.regex_text1.insert(tk.END, self.original_regex_text)
+            self.regex_text1.grid(column=0, row=0, sticky='nsew')
+            self.regex_text1.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text1, self.original_regex_text))
+
+            self.regex_text2 = tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="wheat1")
+            self.regex_text2.insert(tk.END, self.original_regex_text)
+            self.regex_text2.grid(column=1, row=0, sticky='nsew')
+            self.regex_text2.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text2, self.original_regex_text))
+
+            self.regex_text3 = tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="DarkSeaGreen1")
+            self.regex_text3.insert(tk.END, self.original_regex_text)
+            self.regex_text3.grid(column=2, row=0, sticky='nsew')
+            self.regex_text3.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text3, self.original_regex_text))
+
+            self.regex_text4= tk.Text(self.text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5,relief="sunken",bg="pink1")
+            self.regex_text4.insert(tk.END, self.original_regex_text)
+            self.regex_text4.grid(column=3, row=0, sticky='nsew')
+            self.regex_text4.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text4, self.original_regex_text))
+
+
 
        # Number of keywords button
-        tk.Entry(self.annotated_values_frame)
-        #tk.Entry(self.annotated_values_frame).grid(row=1,column=5,sticky="se")
-        #tk.Entry(self.annotated_values_frame).grid(row=1,column=6,sticky="se")
-        #tk.Entry(self.annotated_values_frame).grid(row=1,column=7,sticky="se")
-        #tk.Entry(self.annotated_values_frame).grid(row=1,column=8,sticky="se")
-        #tk.Entry(self.annotated_values_frame).grid(row=1,column=9,sticky="se")
-
-        combo = ttk.Combobox(self.annotated_values_frame,values=(1,2,3))
-        combo.grid(column=0,row=0,sticky="se")
-        combo.bind('<<ComboboxSelected>>',self.on_choose_num_keywords)
-
-        #num_keywords_button = tk.Button(self.right_options_frame, text='Number of Keywords', width=16,font=textfont,command=self.on_choose_num_keywords)
-        #num_keywords_button.grid(column=0, row=1, sticky='sw')
-
-        # Number of keywords input text box
-        #self.num_keywords_entry = tk.Entry(self.right_options_frame,font=textfont)
-        #self.num_keywords_entry.insert(0,"")
-        #self.num_keywords_entry.grid(column=1,row=1,sticky='se')
+        #tk.Entry(self.annotated_values_frame,width=2).grid(rowspan=1,columnspan=3)
 
 
+    def create_text_boxes(self,num_boxes_to_make):
+        pass
+
+        #entry_frame.grid_propagate(False)
+
+        
     def show_widgets(self,upto_widgetposition):
 
         for item in self.annotated_values_frame.winfo_children()[:int(upto_widgetposition)]:
             item.grid()
+    def iterate_on_regex(self):
+        for item in self.text_regex_frame.winfo_children():
+            self.on_run_regex(item)
 
 
-
-
-
-
-#        # num boxes to make 
-#        num_boxes_to_make = num_keywords_entry.get()
-#        num_boxes_to_make = int(num_boxes_to_make)
-#
-#        self.entry_annotate.clear()
-#        for box in range(num_boxes_to_make):
-#            key_name = self.var_names_of_textbox[box]
-#
-#            self.entry_annotate[key_name] = 'yo'
-#            self.entry_annotate[key_name] = tk.Entry(self.entry_frame,font=textfont,width=2)
-#            self.entry_annotate[key_name].grid(column=box,row=1,sticky='w')
-#            self.entry_annotate[key_name]
-
-
-
-
-    def on_run_regex(self): 
+    def on_run_regex(self,item): 
+        #self.regex_text = item
         if not self.data_model.input_fname:
             # Warning
             messagebox.showerror(title="Error", message="Please select an input file using the 'Select File' button.")
@@ -174,6 +248,7 @@ class MainApplication(tk.Frame):
         self.data_model.output_df = pd.read_csv(self.data_model.output_fname, index_col=0, header=0, dtype=object)
         self.refresh_model()
 
+
     def refresh_model(self):
         self.data_model.current_row_index = 0
         if self.checkvar:
@@ -215,25 +290,36 @@ class MainApplication(tk.Frame):
             pos_start = '{}+{}c'.format(tag_start, start)
             pos_end = '{}+{}c'.format(tag_start, end)
             self.pttext.tag_add('highlighted', pos_start, pos_end)
-        self.show_annotation()
+        self.iter_show_annotate()
 
-    def show_annotation(self):
+    def iter_show_annotate(self):
+        for item in self.entry_frame.winfo_children():
+            self.show_annotation(item)
+
+
+    def show_annotation(self,item):
+        self.ann_textbox = item
         self.ann_textbox.delete(0, tk.END)
         self.ann_textbox.insert(0, self.data_model.get_annotation())
+    
+    def iter_to_save_annotation(self):
+        for item in self.entry_frame.winfo_children():
+            self.on_save_annotation(item)
 
-    def on_save_annotation(self):
+    def on_save_annotation(self,annotate):
+        self.ann_textbox = annotate
         annotation = self.ann_textbox.get()
         if len(annotation) > 0:
             self.data_model.write_to_annotation(annotation)
 
     def on_prev(self):
-        self.on_save_annotation()
+        self.iter_to_save_annotation()
         if self.data_model.current_row_index > 0:
             self.data_model.current_row_index -= 1
         self.display_output_note()
         
     def on_next(self):
-        self.on_save_annotation()
+        self.iter_to_save_annotation()
         if self.data_model.current_row_index < self.data_model.num_notes:
             self.data_model.current_row_index += 1
         self.display_output_note()
@@ -270,6 +356,7 @@ class MainApplication(tk.Frame):
     
     def create_right_frame(self,root):
         root
+
     def setup_interface(self, root):
         # Define fonts
         titlefont = font.Font(family='Open Sans', size=18, weight='bold')
@@ -312,6 +399,9 @@ class MainApplication(tk.Frame):
         right_frame.grid_rowconfigure(8, weight=1)
         right_frame.grid_rowconfigure(9, weight=1)
         right_frame.grid_rowconfigure(10, weight=1)
+        right_frame.grid_rowconfigure(11, weight=1)
+
+
         right_frame.grid_columnconfigure(0, weight=1)
 
         # Buttons
@@ -396,7 +486,7 @@ class MainApplication(tk.Frame):
         
         # Right button container
         right_regex_frame = tk.Frame(right_frame, bg=right_bg_color)
-        right_regex_frame.grid(column=0, row=3, padx=10, pady=10, sticky='nsew')
+        right_regex_frame.grid(column=0, row=4, padx=10, pady=10, sticky='nsew')
         right_regex_frame.grid_propagate(False)
         right_regex_frame.grid_columnconfigure(0, weight=1)
         right_regex_frame.grid_columnconfigure(1, weight=3)
@@ -406,7 +496,7 @@ class MainApplication(tk.Frame):
         regex_title = tk.Label(right_regex_frame, text='Regular Expression', font=boldfont, bg=right_bg_color)
         regex_title.grid(column=0, row=0)
 
-        regex_button = tk.Button(right_regex_frame, text='Run Regex', width=7, command=self.on_run_regex)
+        regex_button = tk.Button(right_regex_frame, text='Run Regex', width=7, command=self.iterate_on_regex)
         regex_button.grid(column=0, row=1, sticky='sw')
 
         self.regex_label = tk.Entry(right_regex_frame, font=labelfont)
@@ -444,27 +534,22 @@ class MainApplication(tk.Frame):
 
         self.hide_regex_options()
 
-                # Regex text box
-        text_regex_frame = tk.Frame(right_frame, borderwidth=1, relief="sunken")
-        text_regex_frame.grid_rowconfigure(0, weight=1)
-        text_regex_frame.grid_rowconfigure(1, weight=1)
-        text_regex_frame.grid_columnconfigure(0, weight=1)
-        text_regex_frame.grid(column=0, row=4, rowspan=2, padx=10, pady=10, sticky='nsew')
-        text_regex_frame.grid_propagate(False)
-
-        self.original_regex_text = "Type comma-separated keywords here."
-        self.regex_text = tk.Text(text_regex_frame, font=textfont, borderwidth=2, highlightthickness=0, height=5)
-        self.regex_text.insert(tk.END, self.original_regex_text)
-        self.regex_text.grid(column=0, row=0, sticky='nsew')
-        self.regex_text.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text, self.original_regex_text))
+        # Regex text box
 
         # Right textbox container
-        self.entry_frame = tk.Frame(right_frame, bg=right_bg_color)
-        self.entry_frame.grid(column=0, row=6, rowspan=2, padx=10, pady=10, sticky='nsew')
-        self.entry_frame.grid_propagate(False)
+        self.entry_frame = tk.Frame(right_frame, relief="sunken")
+        self.entry_frame.grid(column=0, row=8, rowspan=1, padx=10, pady=10, sticky='nsew')
         self.entry_frame.grid_rowconfigure(0, weight=1)
-        self.entry_frame.grid_rowconfigure(1, weight=1)
-        self.entry_frame.grid_rowconfigure(2, weight=1)
+#        self.entry_frame.grid_rowconfigure(1, weight=1)
+#        self.entry_frame.grid_rowconfigure(2, weight=1)
+        self.entry_frame.grid_columnconfigure(0, weight=1)
+        self.entry_frame.grid_columnconfigure(1, weight=1)
+        self.entry_frame.grid_columnconfigure(2, weight=1)
+        self.entry_frame.grid_columnconfigure(3, weight=1)
+
+
+        self.entry_frame.grid_propagate(False)
+        
 
         save_buttom_frame = tk.Frame(right_frame,bg=right_bg_color)
         save_buttom_frame.grid(column=0,row=9,rowspan=2,padx=10,pady=10,sticky='nsew')
@@ -477,17 +562,47 @@ class MainApplication(tk.Frame):
         ann_text = tk.Label(save_buttom_frame, text='Annotated Value', font=boldfont, bg=right_bg_color)
         ann_text.grid(column=0, row=0, sticky='ws')
 
-        #self.ann_textbox = tk.Entry(self.entry_frame, font=textfont)
-        #self.ann_textbox.grid(column=0, row=1, sticky='e')
+
 
         ann_button = tk.Button(save_buttom_frame, text='Save', width=8, command=self.on_save_annotation)
         ann_button.grid(column=0, row=2, sticky='nw')
 
         #TODO get rid of this
-        self.annotated_values_frame = tk.Frame(right_frame,bg=right_bg_color)
-        self.annotated_values_frame.grid(column=0,row=7,rowspan=2,padx=0,pady=0,sticky='nsew')
-        self.entry_frame.grid_propagate(False)
+
+        combo_box_frame= tk.Frame(right_frame, bg=right_bg_color)
+        combo_box_frame.grid(column=0, row=3, rowspan=1)
+
+        combo_box_frame.grid_columnconfigure(0, weight=1)
+        combo_box_frame.grid_columnconfigure(1, weight=1)
+        combo_box_frame.grid_columnconfigure(2, weight=1)
+        
+        combo_label= tk.Label(combo_box_frame, text='Number of Boxes', font=textfont, bg=right_bg_color)
+        combo_label.grid(column=0, row=0, sticky='w')
+
+        #combo_box_frame.grid_propagate(False)
+        #combo_box_frame.grid_columnconfigure(0, weight=1)
+        #combo_box_frame.grid_columnconfigure(1, weight=1)
+        #self.entry_frame= tk.Frame(right_frame,bg=right_bg_color)
+
+        combo = ttk.Combobox(combo_box_frame,values=(1,2,3,4))
+        combo.grid(column=0,row=2,sticky="e")
+        combo.bind('<<ComboboxSelected>>',self.on_choose_num_keywords)
+
+        self.text_regex_frame = tk.Frame(right_frame,relief="sunken")
+        self.text_regex_frame.grid_rowconfigure(0, weight=1)
+        self.text_regex_frame.grid_rowconfigure(1, weight=1)
+        self.text_regex_frame.grid_columnconfigure(0, weight=1)
+        self.text_regex_frame.grid_columnconfigure(1, weight=1)
+        self.text_regex_frame.grid_columnconfigure(2, weight=1)
+        self.text_regex_frame.grid_columnconfigure(3, weight=1)
 
 
+        self.text_regex_frame.grid(column=0, row=5,rowspan=2, padx=10, pady=10, sticky='nsew')
+        self.text_regex_frame.grid_propagate(False)
+
+
+
+
+       
 
         
