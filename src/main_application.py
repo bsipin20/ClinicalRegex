@@ -18,10 +18,7 @@ class MainApplication(tk.Frame):
         self.note_key = RPDR_NOTE_KEYWORD
         self.patient_key = RPDR_PATIENT_KEYWORD
         self.checkvar = False
-        self.var_names_of_textbox = ["one","two","three","four","five","six","seven","eight","nine"]
-        self.entry_annotate = dict()
-        #self.determine_annotated()
-        self.made_boxes = False
+        #self.var_names_of_textbox = ["one","two","three","four","five","six","seven","eight","nine"]
 
     # Set up button click methods
     def on_select_file(self):
@@ -195,9 +192,11 @@ class MainApplication(tk.Frame):
 
         for item in self.annotated_values_frame.winfo_children()[:int(upto_widgetposition)]:
             item.grid()
-    def iterate_on_regex(self):
-        for item in self.text_regex_frame.winfo_children():
-            self.on_run_regex(item)
+    #def iterate_on_regex(self):
+        #for item in self.text_regex_frame.winfo_children():
+            #print(self)
+            #print(item)
+            #self.on_run_regex(item)
 
 
     def on_run_regex(self,item): 
@@ -232,6 +231,8 @@ class MainApplication(tk.Frame):
             except:
                 messagebox.showerror(title="Error", message="Something went wrong, did you select an appropriately formatted file to perform the Regex on?")
                 return
+        """ this is when rdpr format is necessary """ 
+
         else:
             try:
                 run_regex(self.data_model.input_fname, phrases, output_fname)

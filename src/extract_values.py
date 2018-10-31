@@ -175,6 +175,8 @@ def clean_phrase(phrase, needs_decode=True):
     return str(cleaned.strip())
 
 def process_rpdr_file_unannotated(filename):
+    """"READ FILE"""
+
     with open(filename, 'rb') as rpdr_file:
         rpdr_lines = rpdr_file.readlines()
         rpdr_lines = [clean_phrase(line) for line in rpdr_lines]
