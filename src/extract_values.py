@@ -56,6 +56,11 @@ class NotePhraseMatches(object):
     def finalize_phrase_matches(self):
         self.phrase_matches.sort(key=lambda x: x.match_start)
 
+    def print_phrase_matches(self):
+        """ for debugging"""
+        #return(self.phrase_matches)
+
+
 
 class PhraseMatch(object):
     """Describes a single phrase match to a single RPDR Note for a phrase."""
@@ -238,39 +243,48 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
     """Write one CSV row for each phrase_match where the row contains all of
     the RPDR note keys along with the extracted numerical value at the end of
     the row."""
+#    for np in note_phrase_matches:
+#        _write_csv_output(np, note_key, output_fname)
+
+
     dict_list = []
-    for note_phrase_match in note_phrase_matches:
-        note = note_phrase_match.note_dict[note_key]
-        matches = []
-        for phrase_match in note_phrase_match.phrase_matches:
-            match_start = phrase_match.match_start
-            match_end = phrase_match.match_end 
-            matched_text = note[match_start:match_end]
-            char_start = re.search(r'\w', matched_text).start()
-            match_start += char_start
-            matched_text = matched_text.strip()
-            match_end = match_start + len(matched_text)
-            matches.append((match_start, match_end))
+    for np_ in note_phrase_matches:
+        for note_phrase_match in np_:
+            note = note_phrase_match.note_dict[note_key]
+            matches = []
+            for phrase_match in note_phrase_match.phrase_matches:
+                match_start = phrase_match.match_start
+                match_end = phrase_match.match_end 
+                matched_text = note[match_start:match_end]
+            ##### 
+                char_start = re.search(r'\w', matched_text).start()
+                match_start += char_start
+                matched_text = matched_text.strip()
+                match_end = match_start + len(matched_text)
+                matches.append((match_start, match_end))
 
-        extracted_value = 0
-        if len(note_phrase_match.phrase_matches) > 0:
-            extracted_value = note_phrase_match.phrase_matches[0].extracted_value
-        note_phrase_match.note_dict['MATCHES'] = matches
-        note_phrase_match.note_dict['EXTRACTED_VALUE'] = extracted_value
-        dict_list.append(note_phrase_match.note_dict)
+            extracted_value = 0
+            if len(note_phrase_match.phrase_matches) > 0:
+                extracted_value = note_phrase_match.phrase_matches[0].extracted_value
+            
+            note_phrase_match.note_dict['MATCHES'] = matches
+            note_phrase_match.note_dict['EXTRACTED_VALUE'] = extracted_value
+            dict_list.append(note_phrase_match.note_dict)
 
-    df = pd.DataFrame(dict_list)
-    df['MATCHES'] = df['MATCHES'].astype('object')
-    df.index = np.arange(0, df.shape[0])
-    df = clean_df(df, [RPDR_NOTE_KEYWORD], False)
-    df.to_csv(output_fname)
+        """ writes to csv file """
+        df = pd.DataFrame(dict_list)
+        df['MATCHES'] = df['MATCHES'].astype('object')
+        df.index = np.arange(0, df.shape[0])
+        df = clean_df(df, [RPDR_NOTE_KEYWORD], False)
+        df.to_csv(output_fname)
+
     writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
     df.to_excel(writer,'Sheet1')
-
 
 def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=True, note_keyword=RPDR_NOTE_KEYWORD, patient_keyword=RPDR_PATIENT_KEYWORD, extract_numerical_value=False, 
         extract_date=False, report_description=None, report_type=None, ignore_punctuation=False):
 
+    """ given phrases, and input filename returns phrase match objects, in a list form """
     if extract_numerical_value:
         phrase_type = PHRASE_TYPE_NUM
     elif extract_date:
@@ -290,6 +304,19 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
         note_dicts = df.to_dict('records')
 
     note_phrase_matches = _extract_values_from_notes(note_dicts, phrase_type, phrases, note_keyword, ignore_punctuation)
-    _write_csv_output(note_phrase_matches, note_keyword, output_filename)
+    return(note_phrase_matches)
+    
+def multi_run_regex(file_, phrases, output_fname, is_rpdr=True, note_keyword=RPDR_NOTE_KEYWORD, patient_keyword=RPDR_PATIENT_KEYWORD, extract_numerical_value=False, 
+        extract_date=False, report_description=None, report_type=None, ignore_punctuation=False):
 
+    note_phrase_matches = []
+    for phrase_ in phrases:
+        match = run_regex(input_filename=file_,phrases=phrase_,output_filename=output_fname)
+        note_phrase_matches.append(match)
+
+    _write_csv_output(note_phrase_matches, note_keyword, output_fname) 
+
+
+
+#multi_run_regex('test_deidentified_rpdr_format.txt',['patient,Care','twice,weekly'], 'output.csv')
 #run_regex('test_deidentified_rpdr_format.txt','patient', 'output.csv')

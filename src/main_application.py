@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import font, filedialog, messagebox,ttk
 from model import DataModel
-from extract_values import run_regex
+from extract_values import multi_run_regex
 import pandas as pd
 import ast
 
@@ -106,8 +106,6 @@ class MainApplication(tk.Frame):
     def determine_annotated(self,num_boxes):
         # Right textbox container
 
-
-
         self.original_regex_text = "Type comma-separated keywords here."
         self.delete_remaining_text()
 
@@ -182,6 +180,7 @@ class MainApplication(tk.Frame):
         #tk.Entry(self.annotated_values_frame,width=2).grid(rowspan=1,columnspan=3)
 
 
+
     def create_text_boxes(self,num_boxes_to_make):
         pass
 
@@ -192,29 +191,63 @@ class MainApplication(tk.Frame):
 
         for item in self.annotated_values_frame.winfo_children()[:int(upto_widgetposition)]:
             item.grid()
-    #def iterate_on_regex(self):
-        #for item in self.text_regex_frame.winfo_children():
-            #print(self)
-            #print(item)
-            #self.on_run_regex(item)
+    def iterate_on_regex(self):
+        for item in self.text_regex_frame.winfo_children():
+            self.on_run_regex(item)
+
+    def handle_all_current_regex(self):
+        regex_texts =[]
+
+#if hasattr(obj, 'attr_name'):
+        if hasattr(self,"regex_text4"):
+            phrase1 = self.regex_text1.get(1.0, 'end-1c').strip()
+            phrase2 = self.regex_text2.get(1.0, 'end-1c').strip()
+            phrase3 = self.regex_text3.get(1.0, 'end-1c').strip()
+            #phrase4 = self.regex_text4.get(1.0, 'end-1c').strip()
+
+            regex_texts =[phrase1,phrase2,phrase3,phrase4]
+
+        elif hasattr(self,"regex_text3"):
+            phrase1 = self.regex_text1.get(1.0, 'end-1c').strip()
+            phrase2 = self.regex_text2.get(1.0, 'end-1c').strip()
+            phrase3 = self.regex_text3.get(1.0, 'end-1c').strip()
 
 
-    def on_run_regex(self,item): 
-        #self.regex_text = item
+
+            regex_texts =[phrase1,phrase2,phrase3]
+            
+        elif hasattr(self,"regex_text2"):
+            phrase1 = self.regex_text1.get(1.0, 'end-1c').strip()
+            phrase2 = self.regex_text2.get(1.0, 'end-1c').strip()
+            regex_texts =[phrase1,phrase2]
+
+        elif hasattr(self,"regex_text1"):
+
+            phrase1 = self.regex_text1.get(1.0, 'end-1c').strip()
+            regex_texts = [phrase1]
+        return(regex_texts)
+
+
+
+    def on_run_regex(self): 
+#        self.regex_text = self.regex_text1
         if not self.data_model.input_fname:
             # Warning
             messagebox.showerror(title="Error", message="Please select an input file using the 'Select File' button.")
             return
 
         output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
+        # Retrieve phrases, changed to list of tuples
+        phrases= self.handle_all_current_regex()
 
-        # Retrieve phrases
-        phrases = self.regex_text.get(1.0, 'end-1c').strip()
+
+        #TODO need to add none response error check in any potential regex text box
         if phrases == self.original_regex_text or len(phrases) == 0:
             messagebox.showerror(title="Error", message="Please input comma-separated phrases to search for. ")
             return
 
         rpdr_checkbox = self.rpdr_checkbox.var.get()
+
         if rpdr_checkbox == 0:
             note_keyword = self.note_key_entry.get()
             patient_keyword = self.patient_id_entry.get()
@@ -225,23 +258,26 @@ class MainApplication(tk.Frame):
                 messagebox.showerror(title='Error', message='Please input the column name for patient IDs.')
                 return
             try:
-                run_regex(self.data_model.input_fname, phrases, output_fname, False, note_keyword, patient_keyword)
+                multi_run_regex(self.data_model.input_fname, phrases, output_fname, False, note_keyword, patient_keyword)
                 self.note_key = note_keyword
                 self.patient_key = patient_keyword
             except:
                 messagebox.showerror(title="Error", message="Something went wrong, did you select an appropriately formatted file to perform the Regex on?")
                 return
-        """ this is when rdpr format is necessary """ 
 
+  #########      """ this is when rdpr format is necessary """ 
         else:
-            try:
-                run_regex(self.data_model.input_fname, phrases, output_fname)
-                self.note_key = RPDR_NOTE_KEYWORD
-                self.patient_key = RPDR_PATIENT_KEYWORD
-            except:
-                messagebox.showerror(title="Error", message="Something went wrong, did you select an appropriately formatted RPDR file to perform the Regex on?")
-                return
+            #try:
+            multi_run_regex(self.data_model.input_fname, phrases, output_fname)
+            self.note_key = RPDR_NOTE_KEYWORD
+            self.patient_key = RPDR_PATIENT_KEYWORD
+
+            #except:
+            #    messagebox.showerror(title="Error", message="Something went wrong, did you select an appropriately formatted RPDR file to perform the Regex on?")
+            #    return
         self.refresh_viewer(output_fname)
+
+
 
     # Functions that change display
     def refresh_viewer(self, output_fname):
@@ -257,12 +293,31 @@ class MainApplication(tk.Frame):
         else:
             self.data_model.display_df = self.data_model.output_df.copy()
 
+        #change num_notes to num of unique notes
+
+
         self.data_model.num_notes = self.data_model.display_df.shape[0]
         self.regex_file_text.config(text=self.data_model.output_fname.split('/')[-1])
+    
+
         self.display_output_note()
+
+    def get_matches_repo_num(self,df,report_num):
+        all_matches = []
+        num_rows = df.shape[0]
+        for i in range(0,num_rows): # get num of rows
+            row_l = df.iloc[i]
+            check = int(df['REPORT_NUMBER'][i])
+            if report_num == check:
+                row = df.iloc[i]
+                values = eval(row["MATCHES"])
+                all_matches = all_matches + values
+        return(all_matches)
+
 
     def display_output_note(self):
         current_note_row = self.data_model.display_df.iloc[self.data_model.current_row_index]
+
         try:
             current_note_text = current_note_row[self.note_key]
         except:
@@ -275,10 +330,15 @@ class MainApplication(tk.Frame):
             messagebox.showerror(title='Error', message='Unable to retrieve patient ID. Did you select the correct key?')
             return
 
+        # needs to show num of unique notes 
         self.number_label.config(text='%d of %d' % (self.data_model.current_row_index + 1, self.data_model.num_notes))
         self.patient_num_label.config(text='Patient ID: %s' % current_patient_id)
 
-        match_indices = ast.literal_eval(current_note_row['MATCHES'])
+
+        # match_indices need to get matches for all 
+        match_indices = self.get_matches_repo_num(self.data_model.display_df,int(current_note_row['REPORT_NUMBER']))
+
+        #match_indices = ast.literal_eval(current_note_row['MATCHES'])
 
         self.pttext.config(state=tk.NORMAL)
         self.pttext.delete(1.0, tk.END)
@@ -291,6 +351,7 @@ class MainApplication(tk.Frame):
             pos_start = '{}+{}c'.format(tag_start, start)
             pos_end = '{}+{}c'.format(tag_start, end)
             self.pttext.tag_add('highlighted', pos_start, pos_end)
+
         self.iter_show_annotate()
 
     def iter_show_annotate(self):
@@ -497,7 +558,7 @@ class MainApplication(tk.Frame):
         regex_title = tk.Label(right_regex_frame, text='Regular Expression', font=boldfont, bg=right_bg_color)
         regex_title.grid(column=0, row=0)
 
-        regex_button = tk.Button(right_regex_frame, text='Run Regex', width=7, command=self.iterate_on_regex)
+        regex_button = tk.Button(right_regex_frame, text='Run Regex', width=7, command=self.on_run_regex)
         regex_button.grid(column=0, row=1, sticky='sw')
 
         self.regex_label = tk.Entry(right_regex_frame, font=labelfont)
@@ -563,9 +624,7 @@ class MainApplication(tk.Frame):
         ann_text = tk.Label(save_buttom_frame, text='Annotated Value', font=boldfont, bg=right_bg_color)
         ann_text.grid(column=0, row=0, sticky='ws')
 
-
-
-        ann_button = tk.Button(save_buttom_frame, text='Save', width=8, command=self.on_save_annotation)
+        ann_button = tk.Button(save_buttom_frame, text='Save', width=8, command=self.iter_to_save_annotation())
         ann_button.grid(column=0, row=2, sticky='nw')
 
         #TODO get rid of this

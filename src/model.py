@@ -13,6 +13,7 @@ class DataModel:
 		self.num_notes = None
 		self.annotation_key = 'ANNOTATION'
 
+
 	def write_to_annotation(self, annotation):
 		if self.output_df is None or self.current_row_index is None:
 			return
