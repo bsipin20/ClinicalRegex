@@ -60,8 +60,6 @@ class NotePhraseMatches(object):
         """ for debugging"""
         #return(self.phrase_matches)
 
-
-
 class PhraseMatch(object):
     """Describes a single phrase match to a single RPDR Note for a phrase."""
     def __init__(self, extracted_value, match_start, match_end, phrase):
@@ -239,15 +237,38 @@ def process_rpdr_file_unannotated(filename):
             current_note += line + "\n"
     return notes
 
+def _get_matches_repo_num(self,df,report_num):
+    all_matches = []
+    num_rows = df.shape[0]
+    for i in range(0,num_rows): # get num of rows
+        row_l = df.iloc[i]
+        check = int(df['REPORT_NUMBER'][i])
+        if report_num == check:
+            row = df.iloc[i]
+            values = eval(row["MATCHES"])
+            all_matches = all_matches + values
+
+    return(all_matches)
+
+
+def get_unique_report_nums(note_phrase_matches):
+    """ gets all matches by report_number """
+    #matches = 
+
+    report_nums = {}
+    for np in note_phase_matches:
+        report_nums[np.note_dict['REPORT_NUMBER']]
+    return(list(report_nums))
+    
+
 def _write_csv_output(note_phrase_matches, note_key, output_fname):
     """Write one CSV row for each phrase_match where the row contains all of
     the RPDR note keys along with the extracted numerical value at the end of
     the row."""
-#    for np in note_phrase_matches:
-#        _write_csv_output(np, note_key, output_fname)
-
 
     dict_list = []
+
+
     for np_ in note_phrase_matches:
         for note_phrase_match in np_:
             note = note_phrase_match.note_dict[note_key]
@@ -267,8 +288,11 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
             if len(note_phrase_match.phrase_matches) > 0:
                 extracted_value = note_phrase_match.phrase_matches[0].extracted_value
             
+            """this needs to be X amount of matches"""
+
             note_phrase_match.note_dict['MATCHES'] = matches
             note_phrase_match.note_dict['EXTRACTED_VALUE'] = extracted_value
+
             dict_list.append(note_phrase_match.note_dict)
 
         """ writes to csv file """
@@ -277,6 +301,7 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
         df.index = np.arange(0, df.shape[0])
         df = clean_df(df, [RPDR_NOTE_KEYWORD], False)
         df.to_csv(output_fname)
+
 
     writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
     df.to_excel(writer,'Sheet1')
@@ -318,5 +343,5 @@ def multi_run_regex(file_, phrases, output_fname, is_rpdr=True, note_keyword=RPD
 
 
 
-#multi_run_regex('test_deidentified_rpdr_format.txt',['patient,Care','twice,weekly'], 'output.csv')
+multi_run_regex('test_deidentified_rpdr_format.txt',['patient,Care','twice,weekly'], 'output.csv')
 #run_regex('test_deidentified_rpdr_format.txt','patient', 'output.csv')
