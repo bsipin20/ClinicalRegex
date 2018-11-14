@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import font, filedialog, messagebox,ttk
 from model import DataModel
-from extract_values import multi_run_regex
+from extract_values import run_regex     
 import pandas as pd
 import ast
 
@@ -174,12 +174,8 @@ class MainApplication(tk.Frame):
             self.regex_text4.grid(column=3, row=0, sticky='nsew')
             self.regex_text4.bind("<Button-1>", lambda event: self.clear_textbox(event, self.regex_text4, self.original_regex_text))
 
-
-
        # Number of keywords button
         #tk.Entry(self.annotated_values_frame,width=2).grid(rowspan=1,columnspan=3)
-
-
 
     def create_text_boxes(self,num_boxes_to_make):
         pass
@@ -203,7 +199,7 @@ class MainApplication(tk.Frame):
             phrase1 = self.regex_text1.get(1.0, 'end-1c').strip()
             phrase2 = self.regex_text2.get(1.0, 'end-1c').strip()
             phrase3 = self.regex_text3.get(1.0, 'end-1c').strip()
-            #phrase4 = self.regex_text4.get(1.0, 'end-1c').strip()
+            phrase4 = self.regex_text4.get(1.0, 'end-1c').strip()
 
             regex_texts =[phrase1,phrase2,phrase3,phrase4]
 
@@ -211,8 +207,6 @@ class MainApplication(tk.Frame):
             phrase1 = self.regex_text1.get(1.0, 'end-1c').strip()
             phrase2 = self.regex_text2.get(1.0, 'end-1c').strip()
             phrase3 = self.regex_text3.get(1.0, 'end-1c').strip()
-
-
 
             regex_texts =[phrase1,phrase2,phrase3]
             
@@ -268,7 +262,7 @@ class MainApplication(tk.Frame):
   #########      """ this is when rdpr format is necessary """ 
         else:
             #try:
-            multi_run_regex(self.data_model.input_fname, phrases, output_fname)
+            run_regex(self.data_model.input_fname, phrases, output_fname)
             self.note_key = RPDR_NOTE_KEYWORD
             self.patient_key = RPDR_PATIENT_KEYWORD
 
@@ -303,6 +297,7 @@ class MainApplication(tk.Frame):
         self.display_output_note()
 
     def get_matches_repo_num(self,df,report_num):
+
         all_matches = []
         num_rows = df.shape[0]
         for i in range(0,num_rows): # get num of rows
@@ -313,6 +308,27 @@ class MainApplication(tk.Frame):
                 values = eval(row["MATCHES"])
                 all_matches = all_matches + values
         return(all_matches)
+
+    #def merge_matches(self,df):
+        #all_matches = []
+        #num_rows = df.shape[0]
+        #for i in range(0,num_rows): # get num of rows
+            
+        #    for i in range(0,7):
+                
+        #        match_key = "match" + "_" + str(i)
+        #        df[match_key = 
+            #for 
+            
+            #row_l = df.iloc[i]
+            #check = int(df['REPORT_NUMBER'][i])
+            #if report_num == check:
+            #    row = df.iloc[i]
+            #    values = eval(row["MATCHES"])
+            #    all_matches = all_matches + values
+        #return(all_matches)
+
+
 
 
     def display_output_note(self):
@@ -336,7 +352,7 @@ class MainApplication(tk.Frame):
 
 
         # match_indices need to get matches for all 
-        match_indices = self.get_matches_repo_num(self.data_model.display_df,int(current_note_row['REPORT_NUMBER']))
+        #match_indices = self.get_matches_repo_num(self.data_model.display_df,int(current_note_row['REPORT_NUMBER']))
 
         #match_indices = ast.literal_eval(current_note_row['MATCHES'])
 
@@ -347,10 +363,18 @@ class MainApplication(tk.Frame):
 
         tag_start = '1.0'
         # Add highlighting 
-        for start, end in match_indices:
-            pos_start = '{}+{}c'.format(tag_start, start)
-            pos_end = '{}+{}c'.format(tag_start, end)
-            self.pttext.tag_add('highlighted', pos_start, pos_end)
+        for i in range(1,9): # not dynamic 
+
+            match_key = "MATCH_" + str(i)
+            if match_key in current_note_row:
+                match_indices = ast.literal_eval(current_note_row[match_key])
+
+                                                                                                                                                #TODO need to add try 
+                for start, end in match_indices:
+                    pos_start = '{}+{}c'.format(tag_start, start)
+                    pos_end = '{}+{}c'.format(tag_start, end)
+                    highlight_tag = "highlighted_" + str(i)
+                    self.pttext.tag_add(highlight_tag, pos_start, pos_end)
 
         self.iter_show_annotate()
 
@@ -358,21 +382,28 @@ class MainApplication(tk.Frame):
         for item in self.entry_frame.winfo_children():
             self.show_annotation(item)
 
-
     def show_annotation(self,item):
         self.ann_textbox = item
         self.ann_textbox.delete(0, tk.END)
         self.ann_textbox.insert(0, self.data_model.get_annotation())
     
     def iter_to_save_annotation(self):
+        annotations = []
         for item in self.entry_frame.winfo_children():
-            self.on_save_annotation(item)
+            #self.on_save_annotation(item)
+            self.ann_textbox = item 
+            annotation = self.ann_textbox.get()
+            annotations.append(annotation)
+            if len(annotation) > 0:
+                self.data_model.write_to_annotation(annotations)
 
-    def on_save_annotation(self,annotate):
-        self.ann_textbox = annotate
-        annotation = self.ann_textbox.get()
-        if len(annotation) > 0:
-            self.data_model.write_to_annotation(annotation)
+
+
+    #def on_save_annotation(self,annotate):
+        #self.ann_textbox = annotate
+        #annotation = self.ann_textbox.get()
+        #if len(annotation) > 0:
+        #    self.data_model.write_to_annotation(annotation)
 
     def on_prev(self):
         self.iter_to_save_annotation()
@@ -523,7 +554,14 @@ class MainApplication(tk.Frame):
         scrollbar.config(command=self.pttext.yview)
         scrollbar.grid(column=1, row=0, sticky='nsw')
         self.pttext.grid(column=0, row=0, padx=15, pady=15, sticky='nsew')
-        self.pttext.tag_config('highlighted', background='gold')
+
+        self.pttext.tag_config('highlighted_1', background='skyblue')
+        self.pttext.tag_config('highlighted_2', background='wheat1')
+        self.pttext.tag_config('highlighted_3', background='DarkSeaGreen1')
+        self.pttext.tag_config('highlighted_4', background='pink1')
+
+
+
         self.pttext.bind("<1>", lambda event: self.pttext.focus_set())
         
         # Right button frame
