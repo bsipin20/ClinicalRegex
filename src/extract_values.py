@@ -80,8 +80,8 @@ def _extract_phrase_from_notes(phrase_type, entry_phrases, note, note_dict):
     whether one of the phrases was found in note"""
     if phrase_type == PHRASE_TYPE_WORD:
         pattern_strings = [
-            '(\s%s\s)', '(^%s\s)', '(\s%s$)', '(^%s$)', '(\s%s[\,\.\?\!\-])',
-            '(^%s[\,\.\?\!\-])'
+            '(\s%s\s)', '(^%s\s)', '(\s%s$)', '(^%s$)', '(\s%s[\,\.\?\!\-\;])',
+            '(^%s[\,\.\?\!\-])','([\(,\)]\s*%s)','(\s*%s[\(,\)])', '([\(,\)]\s*%s\s*[\(,\)])'
         ]
     elif phrase_type == PHRASE_TYPE_NUM:
         pattern_strings = [
@@ -154,6 +154,7 @@ def _filter_rpdr_notes_by_column_val(rpdr_notes,
     from either `required_report_type` or `required_report_description` if
     those values are not None.
     """
+
     filtered_rpdr_notes = []
     for rpdr_note in rpdr_notes:
         if (required_report_description is not None and
@@ -268,6 +269,7 @@ def get_unique_report_nums(note_phrase_matches):
     report_nums = {}
     for np in note_phase_matches:
         report_nums[np.note_dict['REPORT_NUMBER']]
+
     return(list(report_nums))
     
 #def transform_df_bef(dict_list,matches,ext_values):
@@ -337,6 +339,7 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
 #    dict_list = transform_df_bef(dict_list,match_coords_list,match_ext_value)
     
     df = pd.DataFrame(dict_list)
+
     for num in range(0,7):
         match_key = "MATCH_" + str(num)
         if match_key in df.columns:
@@ -366,20 +369,21 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
         phrases = [p.strip() for p in entry.split(',')]
         entry_phrases.append(phrases)
 
+
+
     if is_rpdr:
         rpdr_notes = process_rpdr_file_unannotated(input_filename)
         rpdr_notes = _filter_rpdr_notes_by_column_val(rpdr_notes, report_description, report_type)
         note_dicts = [r.get_dictionary() for r in rpdr_notes]
-
     else:
+
         df = pd.read_csv(input_filename, header=0)
         df = clean_df(df, [note_keyword], False)
         note_dicts = df.to_dict('records')
 
-
-
     note_phrase_matches = _extract_values_from_notes(note_dicts, phrase_type, entry_phrases, note_keyword, ignore_punctuation)
     _write_csv_output(note_phrase_matches, note_keyword, output_filename)
+
 
     return(note_phrase_matches)
     
@@ -395,4 +399,7 @@ def multi_run_regex(file_, phrases, output_fname, is_rpdr=True, note_keyword=RPD
     _write_csv_output(note_phrase_matches, note_keyword, output_fname) 
 
 #multi_run_regex('test_deidentified_rpdr_format.txt',['patient,Care','twice,weekly'], 'output.csv')
-run_regex('test_deidentified_rpdr_format.txt',['patient,Care','chief,weekly'], 'output.csv')
+#run_regex('test_deidentified_rpdr_format.txt',['patient,Care','chief,weekly'], 'output.csv')
+#run_regex('all_notes_122017.csv',['patient,Care','chief,weekly'], 'output.csv',patient_keyword="
+#run_regex('all_notes_122017.csv', ['patient','chief'], 'output.csv', False, "TEXT", "HADM_ID")
+            

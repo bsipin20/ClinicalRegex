@@ -245,6 +245,7 @@ class MainApplication(tk.Frame):
         if rpdr_checkbox == 0:
             note_keyword = self.note_key_entry.get()
             patient_keyword = self.patient_id_entry.get()
+
             if not note_keyword:
                 messagebox.showerror(title='Error', message='Please input the column name for notes.')
                 return
@@ -252,7 +253,7 @@ class MainApplication(tk.Frame):
                 messagebox.showerror(title='Error', message='Please input the column name for patient IDs.')
                 return
             try:
-                multi_run_regex(self.data_model.input_fname, phrases, output_fname, False, note_keyword, patient_keyword)
+                run_regex(self.data_model.input_fname, phrases, output_fname, False, note_keyword, patient_keyword)
                 self.note_key = note_keyword
                 self.patient_key = patient_keyword
             except:
