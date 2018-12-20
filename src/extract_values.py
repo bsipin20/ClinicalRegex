@@ -4,14 +4,12 @@ import string
 import numpy as np
 import pandas as pd
 
-
 PHRASE_TYPE_WORD = 0
 PHRASE_TYPE_NUM = 1
 PHRASE_TYPE_DATE = 2
 
 RPDR_NOTE_KEYWORD = 'NOTE'
 RPDR_PATIENT_KEYWORD = 'EMPI'
-
 
 class RPDRNote(object):
     """Works for Lno, Dis, Rad, and Opn RPDR files."""
@@ -423,7 +421,7 @@ def multi_run_regex(file_, phrases, output_fname, is_rpdr=True, note_keyword=RPD
     _write_csv_output(note_phrase_matches, note_keyword, output_fname) 
 
 #multi_run_regex('test_deidentified_rpdr_format.txt',['patient,Care','twice,weekly'], 'output.csv')
-#run_regex('test_deidentified_rpdr_format.txt',['xxxxxx','xdsfdsf','care'], 'output.csv')
+run_regex('test_deidentified_rpdr_format.txt',['patient'], 'output.csv')
 #run_regex('all_notes_122017.csv',['patient,Care','chief,weekly'], 'output.csv',patient_keyword="
 #run_regex('all_notes_122017.csv', ['patient','chief'], 'output.csv', False, "TEXT", "HADM_ID")
             
