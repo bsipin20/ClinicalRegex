@@ -102,7 +102,6 @@ class MainApplication(tk.Frame):
             self.ann_textbox4= tk.Entry(self.entry_frame, font=textfont,relief="sunken",bg="pink1")
             self.ann_textbox4.grid(column=3, row=0, sticky='nsew',padx=10,pady=10)
 
-
     
         self.determine_annotated(num_boxes)
 
@@ -451,9 +450,10 @@ class MainApplication(tk.Frame):
             self.ann_textbox = item 
             annotation = self.ann_textbox.get()
             annotations.append(annotation)
-        #if len(annotation) > 0:
 
-        self.data_model.write_to_annotation(annotations)
+            if len(annotation) > 0:
+
+                self.data_model.write_to_annotation(annotations)
 
 
 
