@@ -13,8 +13,12 @@ class MainApplication(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
         self.master = master
-        self.setup_interface(master)
         self.data_model = DataModel()
+
+
+        self.setup_interface(master)
+       # self.data_model = DataModel()
+
         self.note_key = RPDR_NOTE_KEYWORD
         self.patient_key = RPDR_PATIENT_KEYWORD
         self.checkvar = False
@@ -281,21 +285,68 @@ class MainApplication(tk.Frame):
         self.refresh_model()
 
 
+#    def refresh_model(self):
+#        self.data_model.current_row_index = 0
+#        if self.checkvar:
+#            self.data_model.display_df = self.data_model.output_df[self.data_model.output_df['EXTRACTED_VALUE'] == '1']
+#        else:
+#            self.data_model.display_df = self.data_model.output_df.copy()
+#
+#        #change num_notes to num of unique notes
+#
+#
     def refresh_model(self):
         self.data_model.current_row_index = 0
+
+        # TODO iterate through known boxes 
+        e_val_list = list()
+        list_ = (1,2,3,4)
+
         if self.checkvar:
-            self.data_model.display_df = self.data_model.output_df[self.data_model.output_df['EXTRACTED_VALUE'] == '1']
+
+            #for i in list_:
+            #    string = "EXTRACTED_VALUE_" + str(i)
+            try:
+                self.data_model.display_df = self.data_model.output_df[(self.data_model.output_df["EXTRACTED_VALUE_1"] == '1') | (self.data_model.output_df["EXTRACTED_VALUE_2"] == '1') | (self.data_model.output_df["EXTRACTED_VALUE_3"] == '1') | (self.data_model.output_df["EXTRACTED_VALUE_4"] == '1')]
+
+            except KeyError:
+                try:
+                    self.data_model.display_df = self.data_model.output_df[(self.data_model.output_df["EXTRACTED_VALUE_1"] == '1') | (self.data_model.output_df["EXTRACTED_VALUE_2"] == '1') | (self.data_model.output_df["EXTRACTED_VALUE_3"] == '1')]# | (self.data_model.output_df["EXTRACTED_VALUE_4"] == '1')]
+
+                except KeyError:
+                    try:
+                        self.data_model.display_df = self.data_model.output_df[(self.data_model.output_df["EXTRACTED_VALUE_1"] == '1') | (self.data_model.output_df["EXTRACTED_VALUE_2"] == '1')] #| (self.data_model.output_df["EXTRACTED_VALUE_3"] == '1')]# | (self.data_model.output_df["EXTRACTED_VALUE_4"] == '1')]
+
+                    except KeyError:
+                        self.data_model.display_df = self.data_model.output_df[(self.data_model.output_df["EXTRACTED_VALUE_1"] == '1')]# | (self.data_model.output_df["EXTRACTED_VALUE_2"] == '1')] #| (self.data_model.output_df["EXTRACTED_VALUE_3"] == '1')]# | (self.data_model.output_df["EXTRACTED_VALUE_4"] == '1')]
+
+
+
+
+
+
+
+ 
+#
+#                    self.data_model.display_df = self.data_model.output_df[self.data_model.output_df["EXTRACTED_VALUE_1"] == '1' | self.data_model.output_df["EXTRACTED_VALUE_2"] == 1 | self.data_model.output_df["EXTRACTED_VALUE_3"] == 1 ]
+#
+#                except KeyError:
+#                    try: 
+#                        self.data_model.display_df = self.data_model.output_df[self.data_model.output_df["EXTRACTED_VALUE_1"] == '1' | self.data_model.output_df["EXTRACTED_VALUE_2"] == 1 ]
+#
+#                    except KeyError:
+#                        try:
+#                            self.data_model.display_df = self.data_model.output_df[self.data_model.output_df["EXTRACTED_VALUE_1"] == '1' ]
+#                        except:
+#                            pass
         else:
             self.data_model.display_df = self.data_model.output_df.copy()
 
-        #change num_notes to num of unique notes
-
-
         self.data_model.num_notes = self.data_model.display_df.shape[0]
         self.regex_file_text.config(text=self.data_model.output_fname.split('/')[-1])
-    
-
         self.display_output_note()
+
+
 
     def get_matches_repo_num(self,df,report_num):
 
@@ -367,11 +418,16 @@ class MainApplication(tk.Frame):
         for i in range(1,9): # not dynamic 
 
             match_key = "MATCH_" + str(i)
+            print(match_key)
             if match_key in current_note_row:
-                match_indices = ast.literal_eval(current_note_row[match_key])
+                try:
+                    match_indices = ast.literal_eval(current_note_row[match_key])
+                except ValueError:
+                    continue
 
                                                                                                                                                 #TODO need to add try 
                 for start, end in match_indices:
+
                     pos_start = '{}+{}c'.format(tag_start, start)
                     pos_end = '{}+{}c'.format(tag_start, end)
                     highlight_tag = "highlighted_" + str(i)
@@ -395,16 +451,17 @@ class MainApplication(tk.Frame):
             self.ann_textbox = item 
             annotation = self.ann_textbox.get()
             annotations.append(annotation)
-            if len(annotation) > 0:
-                self.data_model.write_to_annotation(annotations)
+        #if len(annotation) > 0:
+
+        self.data_model.write_to_annotation(annotations)
 
 
 
     #def on_save_annotation(self,annotate):
-        #self.ann_textbox = annotate
-        #annotation = self.ann_textbox.get()
-        #if len(annotation) > 0:
-        #    self.data_model.write_to_annotation(annotation)
+    #    self.ann_textbox = annotate
+    #    annotation = self.ann_textbox.get()
+    #    if len(annotation) > 0:
+    #        self.data_model.write_to_annotation(annotation)
 
     def on_prev(self):
         self.iter_to_save_annotation()

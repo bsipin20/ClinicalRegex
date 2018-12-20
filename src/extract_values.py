@@ -47,9 +47,10 @@ class RPDRNote(object):
 
 class NotePhraseMatches(object):
     """Describes all phrase matches for a particular RPDR Note"""
-    def __init__(self, note_dict):
+    def __init__(self, note_dict,num_boxes):
         self.note_dict = note_dict
         self.phrase_matches = []
+        self.num_entries = num_boxes
 
     def add_phrase_match(self, phrase_match):
         self.phrase_matches.append(phrase_match)
@@ -93,12 +94,15 @@ def _extract_phrase_from_notes(phrase_type, entry_phrases, note, note_dict):
     else:
         raise Exception('Invalid phrase extraction type.')
 
-    phrase_matches = NotePhraseMatches(note_dict)
+    phrase_matches = NotePhraseMatches(note_dict,len(entry_phrases))
 
     entry_num = 0
 
     for entry in entry_phrases:
         entry_num += 1
+
+        #EACH PHRASE
+
         for phrase in entry:
             for pattern_string in pattern_strings:
                 pattern_string = pattern_string % phrase
@@ -283,15 +287,18 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
     dict_list = []
     match_coords_list = []
     match_ext_value = []
+    num_boxes = 1
 
     #for np_ in note_phrase_matches:
     for note_phrase_match in note_phrase_matches:
         note = note_phrase_match.note_dict[note_key]
         matches = []
         entry_nums = []
+        num_boxes = note_phrase_match.num_entries
 
 
         for phrase_match in note_phrase_match.phrase_matches:
+
 
             match_start = phrase_match.match_start 
             match_end = phrase_match.match_end 
@@ -316,20 +323,38 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
         match_coords_list.append(matches)
         match_ext_value.append(extracted_value)
 
+
+        boxes_matched = list()
         for i in range(0,len(matches)):
 
             match_key = "MATCH_" + str(entry_nums[i])
             extracted_key = "EXTRACTED_VALUE_" + str(entry_nums[i])
+            boxes_matched  = list(set(entry_nums))
+            missing = list()
 
 
             if match_key in note_phrase_match.note_dict:
                 note_phrase_match.note_dict[match_key].append(matches[i])
                 note_phrase_match.note_dict[extracted_key] = extracted_value
 
-            else: 
+            else:#(match_key not in note_phrase_match.note_dict) & (i in boxes_matched):
                 note_phrase_match.note_dict[match_key] = [matches[i]]
                 note_phrase_match.note_dict[extracted_key] = extracted_value
 
+            #elif (i not in boxes_matched): #& (match_key 
+            #    print(match_key)
+            #    note_phrase_match.note_dict[match_key] = ['']
+            #    note_phrase_match.note_dict[extracted_value] = 0
+
+
+
+
+        for i in range(1,num_boxes+1):
+            if i not in boxes_matched:
+                match_key = "MATCH_" + str(i)
+                extracted_key = "EXTRACTED_VALUE_" + str(i)
+                note_phrase_match.note_dict[match_key] = [(0,0)]
+                note_phrase_match.note_dict[extracted_key] =0
 
 
         dict_list.append(note_phrase_match.note_dict)
@@ -370,7 +395,6 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
         entry_phrases.append(phrases)
 
 
-
     if is_rpdr:
         rpdr_notes = process_rpdr_file_unannotated(input_filename)
         rpdr_notes = _filter_rpdr_notes_by_column_val(rpdr_notes, report_description, report_type)
@@ -399,7 +423,7 @@ def multi_run_regex(file_, phrases, output_fname, is_rpdr=True, note_keyword=RPD
     _write_csv_output(note_phrase_matches, note_keyword, output_fname) 
 
 #multi_run_regex('test_deidentified_rpdr_format.txt',['patient,Care','twice,weekly'], 'output.csv')
-#run_regex('test_deidentified_rpdr_format.txt',['patient,Care','chief,weekly'], 'output.csv')
+#run_regex('test_deidentified_rpdr_format.txt',['xxxxxx','xdsfdsf','care'], 'output.csv')
 #run_regex('all_notes_122017.csv',['patient,Care','chief,weekly'], 'output.csv',patient_keyword="
 #run_regex('all_notes_122017.csv', ['patient','chief'], 'output.csv', False, "TEXT", "HADM_ID")
             

@@ -23,8 +23,6 @@ class DataModel:
                         self.output_df[key_check] = np.nan
                 #for num in range(1,len(annotations)):
                  #   self.output_df[self.annotation_key] = np.nan
-            
-
                 for i in range(0,len(annotations)):
         
                     new_annotation_key = "ANNOTATION_" + str(i+1)
