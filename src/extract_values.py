@@ -312,10 +312,10 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
     print("If no errors then successfuly worked!")
 #
 if __name__ ==  '__main__':
-    try:
-        run_regex('test_deidentified_rpdr_format.txt','Patient', 'output.csv')
-    except FileNotFoundError:  
-        run_regex(sys.argv[1],'Patient', 'output.csv')
+    #try:
+    #    run_regex('test_deidentified_rpdr_format.txt','Patient', 'output.csv')
+    #except FileNotFoundError:  
+    run_regex(sys.argv[1],'Patient', 'output.csv')
 
 
         
