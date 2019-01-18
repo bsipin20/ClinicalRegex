@@ -291,10 +291,12 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
         phrase_type = PHRASE_TYPE_WORD
     phrases = [p.strip() for p in phrases.split(',')]
 
+    is_rpdr = bool(is_rpdr)
+    #structures note_dicts
+
     if is_rpdr:
         rpdr_notes = process_rpdr_file_unannotated(input_filename)
         rpdr_notes = _filter_rpdr_notes_by_column_val(rpdr_notes, report_description, report_type)
-        #print(rpdr_notes)
         note_dicts = [r.get_dictionary() for r in rpdr_notes]
 
     else:
@@ -310,13 +312,14 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
 
     note_phrase_matches = _extract_values_from_notes(note_dicts, phrase_type, phrases, note_keyword, ignore_punctuation)
     _write_csv_output(note_phrase_matches, note_keyword, output_filename)
-    print("If no errors then successfuly worked!")
+
 #
 if __name__ ==  '__main__':
     #try:
     #    run_regex('test_deidentified_rpdr_format.txt','Patient', 'output.csv')
     #except FileNotFoundError:  
-    run_regex(sys.argv[1],'Patient', 'output.csv',False,"NOTES","PAT_ID")
+    run_regex(sys.argv[1],'Patient', 'output.csv',sys.argv[2],sys.argv[3],sys.argv[4])
+    print("IF NO ERRORS WORKED")
 
 
         
