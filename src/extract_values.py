@@ -249,7 +249,6 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
     the RPDR note keys along with the extracted numerical value at the end of
     the row."""
     dict_list = []
-    print(G
     for note_phrase_match in note_phrase_matches:
         note = note_phrase_match.note_dict[note_key]
         matches = []
