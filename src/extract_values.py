@@ -296,6 +296,8 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
     #structures note_dicts
     with open(input_filename, 'rb') as f:
         result = chardet.detect(f.read())
+    print("ENCODING TYPE:")
+    print(result)
 
     if is_rpdr:
         rpdr_notes = process_rpdr_file_unannotated(input_filename)
