@@ -249,6 +249,7 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
     the RPDR note keys along with the extracted numerical value at the end of
     the row."""
     dict_list = []
+    print(G
     for note_phrase_match in note_phrase_matches:
         note = note_phrase_match.note_dict[note_key]
         matches = []
@@ -301,6 +302,7 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
         df = pd.read_csv(input_filename, header=0)
         df = clean_df(df, [note_keyword], False)
         note_dicts = df.to_dict('records')
+
     #print(note_dicts)
     #print(phrase_type)
     #print(phrases)
@@ -315,7 +317,7 @@ if __name__ ==  '__main__':
     #try:
     #    run_regex('test_deidentified_rpdr_format.txt','Patient', 'output.csv')
     #except FileNotFoundError:  
-    run_regex(sys.argv[1],'Patient', 'output.csv')
+    run_regex(sys.argv[1],'Patient', 'output.csv',False,"NOTES","PAT_ID")
 
 
         
