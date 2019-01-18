@@ -2,6 +2,7 @@ import csv
 import re
 import string
 import sys 
+import chardet
 import numpy as np
 import pandas as pd
 
@@ -293,6 +294,8 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
 
     is_rpdr = bool(is_rpdr)
     #structures note_dicts
+    with open(input_filename, 'rb') as f:
+        result = chardet.detect(f.read())
 
     if is_rpdr:
         rpdr_notes = process_rpdr_file_unannotated(input_filename)
@@ -300,7 +303,7 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
         note_dicts = [r.get_dictionary() for r in rpdr_notes]
 
     else:
-        df = pd.read_csv(input_filename, header=0)
+        df = pd.read_csv(input_filename, header=0,encoding=result['encoding'])
         df = clean_df(df, [note_keyword], False)
         note_dicts = df.to_dict('records')
 
