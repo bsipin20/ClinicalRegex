@@ -325,7 +325,7 @@ if __name__ ==  '__main__':
     #    run_regex('test_deidentified_rpdr_format.txt','Patient', 'output.csv')
     #except FileNotFoundError:  
     run_regex(sys.argv[1],'Patient', 'output.csv',sys.argv[2],sys.argv[3],sys.argv[4])
-    print("IF NO ERRORS WORKED")
+    print("Latin-1 Attempt 1 IF NO ERRORS WORKED")
 
 
         
