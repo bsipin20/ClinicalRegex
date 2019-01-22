@@ -305,7 +305,8 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
         note_dicts = [r.get_dictionary() for r in rpdr_notes]
 
     else:
-        df = pd.read_csv(input_filename, header=0,encoding=result['encoding'])
+        df = pd.read_csv(input_filename, header=0,encoding='latin1')
+        #result['encoding'])
         df = clean_df(df, [note_keyword], False)
         note_dicts = df.to_dict('records')
 
