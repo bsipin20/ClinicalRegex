@@ -3,9 +3,9 @@ import re
 import string
 import sys 
 import chardet
+import xlrd
 import numpy as np
 import pandas as pd
-
 
 PHRASE_TYPE_WORD = 0
 PHRASE_TYPE_NUM = 1
@@ -280,6 +280,7 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
     writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
     df.to_excel(writer,'Sheet1')
 
+    
 
 def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=True, note_keyword=RPDR_NOTE_KEYWORD, patient_keyword=RPDR_PATIENT_KEYWORD, extract_numerical_value=False, 
         extract_date=False, report_description=None, report_type=None, ignore_punctuation=False):
@@ -293,39 +294,36 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
     phrases = [p.strip() for p in phrases.split(',')]
 
     is_rpdr = bool(is_rpdr)
-    #structures note_dicts
+
     with open(input_filename, 'rb') as f:
         result = chardet.detect(f.read())
-    print("ENCODING TYPE:")
-    print(result)
 
     if is_rpdr:
         rpdr_notes = process_rpdr_file_unannotated(input_filename)
         rpdr_notes = _filter_rpdr_notes_by_column_val(rpdr_notes, report_description, report_type)
         note_dicts = [r.get_dictionary() for r in rpdr_notes]
 
-    else:
-        df = pd.read_csv(input_filename, header=0,encoding='latin1')
-        #result['encoding'])
-        df = clean_df(df, [note_keyword], False)
+    elif input_filename.split(".")[1] == "xls":
+        df = pd.read_excel(input_filename)
+        df = clean_df(df,[note_keyword],False)
         note_dicts = df.to_dict('records')
 
-    #print(note_dicts)
-    #print(phrase_type)
-    #print(phrases)
-    #print(note_keyword)
-    #print(ignore_punctuation)
+    else:
+        # pipe delimiated SEPARATED 
+        df = pd.read_csv(input_filename,sep="|")
+        df = clean_df(df, [note_keyword], False)
+        note_dicts = df.to_dict('records')
 
     note_phrase_matches = _extract_values_from_notes(note_dicts, phrase_type, phrases, note_keyword, ignore_punctuation)
     _write_csv_output(note_phrase_matches, note_keyword, output_filename)
 
 #
 if __name__ ==  '__main__':
-    #try:
-    #    run_regex('test_deidentified_rpdr_format.txt','Patient', 'output.csv')
-    #except FileNotFoundError:  
-    run_regex(sys.argv[1],'Patient', 'output.csv',sys.argv[2],sys.argv[3],sys.argv[4])
-    print("Latin-1 Attempt 1 IF NO ERRORS WORKED")
+    #run_regex(sys.argv[1],'Patient', 'output.csv',sys.argv[2],sys.argv[3],sys.argv[4])
+#    run_regex('duke_notes.xls','patient', 'output.csv',"","TEXT","HADM_ID")
+    run_regex('pipe_delimited.txt','patient', 'output.csv',"","NOTE","ROW_ID")
+
+
 
 
         
