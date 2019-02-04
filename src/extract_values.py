@@ -101,9 +101,12 @@ def _extract_phrase_from_notes(phrase_type, phrases, note, note_dict):
             re_flags = re.I | re.M | re.DOTALL
             pattern = re.compile(pattern_string, flags=re_flags)
             match_iter = pattern.finditer(note)
+            
             try:
                 while True:
                     match = next(match_iter)
+                    print(match.start())
+
                     if phrase_type == PHRASE_TYPE_WORD:
                         extracted_value = 1
                     elif phrase_type == PHRASE_TYPE_NUM:
