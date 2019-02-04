@@ -92,7 +92,7 @@ def _extract_phrase_from_notes(phrase_type, phrases, note, note_dict):
     else:
         raise Exception('Invalid phrase extraction type.')
 
-    #print(phrases)
+    note = str(note)
 
     phrase_matches = NotePhraseMatches(note_dict)
     for phrase in phrases:
