@@ -320,7 +320,9 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
 #
 if __name__ ==  '__main__':
     #run_regex(sys.argv[1],'Patient', 'output.csv',sys.argv[2],sys.argv[3],sys.argv[4])
-    run_regex('duke_notes.xls','patient', 'output.csv',"","TEXT","HADM_ID")
+    #C:\Users\dk242>"C:\Program Files\Python35\DukeClinicalRegexTest-master\src\extract_values.py" "C:\Users\dk242\Desktop\acp_Notes_Comma.csv" "" "NOTES" "MRN"
+    #run_regex('duke_notes.xls','patient', 'output.csv',"","TEXT","HADM_ID")
+    run_regex(sys.argv[1],'Patient', 'output.csv',sys.argv[2],sys.argv[3],sys.argv[4])
 #    run_regex('pipe_delimited.txt','patient', 'output.csv',"","NOTE","ROW_ID")
 
 
