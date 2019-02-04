@@ -3,7 +3,7 @@ import re
 import string
 import sys 
 #import chardet
-import xlrd
+#import xlrd
 import numpy as np
 import pandas as pd
 
