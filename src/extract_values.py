@@ -295,8 +295,8 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
 
     is_rpdr = bool(is_rpdr)
 
-    with open(input_filename, 'rb') as f:
-        result = chardet.detect(f.read())
+#    with open(input_filename, 'rb') as f:
+#        result = chardet.detect(f.read())
 
     if is_rpdr:
         rpdr_notes = process_rpdr_file_unannotated(input_filename)
@@ -320,8 +320,8 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
 #
 if __name__ ==  '__main__':
     #run_regex(sys.argv[1],'Patient', 'output.csv',sys.argv[2],sys.argv[3],sys.argv[4])
-#    run_regex('duke_notes.xls','patient', 'output.csv',"","TEXT","HADM_ID")
-    run_regex('pipe_delimited.txt','patient', 'output.csv',"","NOTE","ROW_ID")
+    run_regex('duke_notes.xls','patient', 'output.csv',"","TEXT","HADM_ID")
+#    run_regex('pipe_delimited.txt','patient', 'output.csv',"","NOTE","ROW_ID")
 
 
 
