@@ -276,9 +276,17 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
 
         if len(note_phrase_match.phrase_matches) > 0:
             extracted_value = note_phrase_match.phrase_matches[0].extracted_value
-        note_phrase_match.note_dict['MATCHES'] = matches
-        note_phrase_match.note_dict['EXTRACTED_VALUE'] = extracted_value
-        dict_list.append(note_phrase_match.note_dict)
+        try: 
+
+            note_phrase_match.note_dict['MATCHES'] = matches
+            note_phrase_match.note_dict['EXTRACTED_VALUE'] = extracted_value
+            dict_list.append(note_phrase_match.note_dict)
+
+        except KeyError:
+            print("This line is not working")
+            pdb.set_trace()
+
+
 
     df = pd.DataFrame(dict_list)
     df['MATCHES'] = df['MATCHES'].astype('object')
