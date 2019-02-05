@@ -2,8 +2,9 @@ import csv
 import re
 import string
 import sys 
+import pdb
 #import chardet
-#import xlrd
+import xlrd
 import numpy as np
 import pandas as pd
 
@@ -100,12 +101,16 @@ def _extract_phrase_from_notes(phrase_type, phrases, note, note_dict):
             pattern_string = pattern_string % phrase
             re_flags = re.I | re.M | re.DOTALL
             pattern = re.compile(pattern_string, flags=re_flags)
-            match_iter = pattern.finditer(note)
-            
+            #pdb.set_trace()
+            try:
+                match_iter = pattern.finditer(note)
+            except TypeError:
+                print("This line is not working")
+                pdb.set_trace()
+
             try:
                 while True:
                     match = next(match_iter)
-                    print(match.start())
 
                     if phrase_type == PHRASE_TYPE_WORD:
                         extracted_value = 1
