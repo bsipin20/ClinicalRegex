@@ -9,6 +9,9 @@ https://github.com/bsipin20/DukeClinicalRegexTest/releases/tag/0.4-alpha
 Unzip file and move folder to Desktop
 
 ## Install dependencies
+Open terminal on mac (press command + space and type in terminal and hit enter)
+Type following commands sequentially 
+
 $ cd ~/Desktop/DukeClinicalRegexTest-master/
 
 $ sudo easy\_install pip
