@@ -3,12 +3,16 @@
 
 ## Download Git
 Download zip file from this link
+
 https://github.com/bsipin20/DukeClinicalRegexTest/releases/tag/0.4-alpha
+
 Unzip file and move folder to Desktop
 
 ## Install dependencies
 $ cd ~/Desktop/DukeClinicalRegexTest-master/
+
 $ sudo easy\_install pip
+
 $ pip install -r requirements.txt
 
 ## Start Program
