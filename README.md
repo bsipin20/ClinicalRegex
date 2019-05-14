@@ -1,6 +1,27 @@
 # ClinicalRegex
 
 
+## Download Git
+Download zip file from this link
+
+https://github.com/bsipin20/DukeClinicalRegexTest/releases/tag/0.4-alpha
+
+Unzip file and move folder to Desktop
+
+## Install dependencies
+Open terminal on mac (press command + space and type in terminal and hit enter)
+Type following commands sequentially 
+
+$ cd ~/Desktop/DukeClinicalRegexTest-master/
+
+$ sudo easy\_install pip
+
+$ pip install -r requirements.txt
+
+## Start Program
+$ python src/main.py
+
+
 ## Installation 
 Please download dropbox link
 ![alt text](https://user-images.githubusercontent.com/22480551/54787127-35097000-4c01-11e9-8524-9df472325f08.png)
