@@ -16,11 +16,10 @@ $ cd ~/Desktop/DukeClinicalRegexTest-master/
 
 $ sudo easy\_install pip
 
-$ pip install -r requirements.txt
+$ pip3 install -r requirements.txt
 
 ## Start Program
-$ python src/main.py
-
+$ python3 src/main.py
 
 ## Installation 
 Please download dropbox link
