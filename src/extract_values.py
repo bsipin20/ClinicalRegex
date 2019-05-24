@@ -207,7 +207,6 @@ def read_rpdr(filename):
         rpdr_lines = [line for line in rpdr_lines if len(line) > 0]
     return(rpdr_lines)
 
-
 def process_rpdr_file_unannotated(filename):
     rpdr_lines = read_rpdr(filename)
 
