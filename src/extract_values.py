@@ -200,11 +200,16 @@ def clean_phrase(phrase, needs_decode=True):
     cleaned = cleaned.strip('\r\n')
     return str(cleaned.strip())
 
-def process_rpdr_file_unannotated(filename):
+def read_rpdr(filename):
     with open(filename, 'rb') as rpdr_file:
         rpdr_lines = rpdr_file.readlines()
         rpdr_lines = [clean_phrase(line) for line in rpdr_lines]
         rpdr_lines = [line for line in rpdr_lines if len(line) > 0]
+    return(rpdr_lines)
+
+
+def process_rpdr_file_unannotated(filename):
+    rpdr_lines = read_rpdr(filename)
 
     # List of processed notes. Each entry is a dictionary
     note_index = 0
@@ -313,7 +318,7 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
 
     if is_rpdr:
 
-        rpdr_notes = process_rpdr_file_unannotated(input_filename)
+        rpdr_notes = read_rpdr(input_filename)
         rpdr_notes = _filter_rpdr_notes_by_column_val(rpdr_notes, report_description, report_type)
         note_dicts = [r.get_dictionary() for r in rpdr_notes]
 
