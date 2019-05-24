@@ -102,7 +102,10 @@ def _extract_phrase_from_notes(phrase_type, phrases, note, note_dict):
             re_flags = re.I | re.M | re.DOTALL
             pattern = re.compile(pattern_string, flags=re_flags)
             #pdb.set_trace()
+            print("\n\n\n")
+            print(note)
             try:
+            
                 match_iter = pattern.finditer(note)
             except TypeError:
                 print("This line is not working")
@@ -174,6 +177,8 @@ def _filter_rpdr_notes_by_column_val(rpdr_notes,
     return filtered_rpdr_notes
 
 def clean_df(df, text_columns, needs_decode=True):
+    #TODO
+    # SPECIFY DTYPES????? MAYBE IDK HOW 
     for label in text_columns:
         if label in df:
             df[label] = df[label].map(lambda x: clean_phrase(x, needs_decode))
@@ -288,6 +293,7 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
     df.index = np.arange(0, df.shape[0])
     df = clean_df(df, [RPDR_NOTE_KEYWORD], False)
     df.to_csv(output_fname)
+
     writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
     df.to_excel(writer,'Sheet1')
 
