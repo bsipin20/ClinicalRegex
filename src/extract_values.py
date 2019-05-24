@@ -287,7 +287,6 @@ def _write_csv_output(note_phrase_matches, note_key, output_fname):
         dict_list.append(note_phrase_match.note_dict)
 
 
-
     df = pd.DataFrame(dict_list)
     #df['MATCHES'] = df['MATCHES'].astype('object')
     df.index = np.arange(0, df.shape[0])
@@ -312,10 +311,8 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
 
     is_rpdr = bool(is_rpdr)
 
-#    with open(input_filename, 'rb') as f:
-#        result = chardet.detect(f.read())
-
     if is_rpdr:
+
         rpdr_notes = process_rpdr_file_unannotated(input_filename)
         rpdr_notes = _filter_rpdr_notes_by_column_val(rpdr_notes, report_description, report_type)
         note_dicts = [r.get_dictionary() for r in rpdr_notes]
