@@ -37,7 +37,7 @@ class MainApplication(tk.Frame):
                 self.patient_key = self.patient_id_entry.get()
             self.refresh_viewer(output_fname)
 
-    def on_run_regex(self): 
+    def on_uun_regex(self): 
         if not self.data_model.input_fname:
             # Warning
             messagebox.showerror(title="Error", message="Please select an input file using the 'Select File' button.")
@@ -51,6 +51,7 @@ class MainApplication(tk.Frame):
             messagebox.showerror(title="Error", message="Please input comma-separated phrases to search for. ")
             return
 
+        #TODO clean
         rpdr_checkbox = self.rpdr_checkbox.var.get()
         if rpdr_checkbox == 0:
             note_keyword = self.note_key_entry.get()
