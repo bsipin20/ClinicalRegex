@@ -34,17 +34,9 @@ class TestExtractValues(unittest.TestCase):
              'Report_Type': 'report_type2',
              'Report_Description': 'report_description2'}, 'note2')
 
-        rpdr_note3 = extract_values.RPDRNote(
-            {'EMPI': 'empi3', 'MRN_Type': 'mrn_type3',
-             'Report_Number': '1233', 'MRN': '1233',
-             'Report_Type': 'report_type3',
-             'Report_Description': 'report_description3'}, 'note3')
+        for note in note_dicts:
 
-        self.rpdr_notes = [rpdr_note1, rpdr_note2, rpdr_note3]
-
-        load_test_data()
-        print('')
-        print('loaded test data')
+            self.rpdr_notes = [rpdr_note1, rpdr_note2]
 
 #    def test_no_filters_does_nothing(self):
 #        filtered_rpdr_notes = (
@@ -73,19 +65,33 @@ class TestExtractValues(unittest.TestCase):
 #                'report_type1'))
 #        self.assertEqual(1, len(filtered_rpdr_notes))
 
+
 class TestRPDR(unittest.TestCase):
     def setUp(self):
         self.rpdr_file = StringIO("""\
             100000|HSP|10000|3000|10000|8/24/2014 12:00:00 AM|ED Discharge Summary|Final|DIS|Patient Hospice
             [report_end]
         """)    
+        rpdr_note_1 = {'REPORT_NUMBER': '1000000', 'NOTE': "Report Status: Final\rED DISCHARGE NOTIFICATION\r\rThe patient presented with a chief complaint of sbo\rFollowing evaluation and treatment, the patient's disposition at the end of the\rvisit was admitted as an inpatient.\rPlease note this\rinformation may have been updated on the inpatient unit.\n", 'EMPI': '100000000', 'MRN_TYPE': 'HSP', 'MRN': '1000000', 'REPORT_TYPE': 'DIS', 'REPORT_DESCRIPTION': 'ED Discharge Summary', 'REPORT_DATE': '8/01/2011 12:00:00 AM'}
 
     def test_rpdr(self):
         file_ = "test_deidentified_rpdr_format.txt"
         f = extract_values.process_rpdr_file_unannotated(file_)
         t = extract_values._filter_rpdr_notes_by_column_val(f,None,None)
         note_dicts = [r.get_dictionary() for r in t]
-        print(note_dicts[0])
+        print(note_dicts[1])
+
+
+class TestDependencies(unittest.TestCase):
+    def test_correct_pandas(self):
+        pass
+
+    def test_correct_openpyxl(self):
+        pass
+
+       
+
+
 
 if __name__ == "__main__":
     unittest.main()
