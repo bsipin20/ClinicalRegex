@@ -229,6 +229,10 @@ class ClinicianNotes(object):
             self.note_dicts = self.handle_rpdr(input_file)
         elif input_file.split(".")[1] == "xls":
             self.note_dicts = self.handle_xls(input_file)
+        elif input_file.split(".")[1] == "csv":
+                self.note_dicts = self.handle_csv(input_file)
+
+
 
 
 
@@ -245,6 +249,13 @@ class ClinicianNotes(object):
         df = pd.read_excel(input_file)
         df = self.clean_df(df, [self.note_keyword], False)
         return(df.to_dict('records'))
+
+    def handle_csv(self,input_file):
+        df = pd.read_csv(input_file)
+        df = self.clean_df(df, [self.note_keyword], False)
+        return(df.to_dict('records'))
+
+
 
     def search_phrases(self,phrases):
         self.phrases = [p.strip() for p in phrases.split(',')]
@@ -515,10 +526,8 @@ def run_regex(
 #    note_phrase_matches = _extract_values_from_notes(
 #        note_dicts, phrase_type, phrases, note_keyword, ignore_punctuation)
     
-    note = ClinicianNotes('duke_notes.xls',is_rpdr=is_rpdr,note_keyword="TEXT",patient_keyword="ROW_ID")
+    note = ClinicianNotes(input_filename,is_rpdr=is_rpdr,note_keyword=note_keyword,patient_keyword=patient_keyword)
     note_phrase_matches = note.search_phrases(phrases)
- 
-
     note._write_csv_output(note_phrase_matches, note_keyword, output_filename)
 
 
