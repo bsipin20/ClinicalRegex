@@ -37,7 +37,7 @@ class MainApplication(tk.Frame):
                 self.patient_key = self.patient_id_entry.get()
             self.refresh_viewer(output_fname)
 
-    def on_uun_regex(self): 
+    def on_run_regex(self): 
         if not self.data_model.input_fname:
             # Warning
             messagebox.showerror(title="Error", message="Please select an input file using the 'Select File' button.")

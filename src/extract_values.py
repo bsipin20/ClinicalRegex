@@ -161,14 +161,13 @@ class RPDRNote(object):
 
 class NotePhraseMatches(object):
     """Describes all phrase matches for a particular RPDR Note"""
+    def __init__(self, note_dict): 
+        self.note_dict = note_dict 
+        self.phrase_matches = [] 
 
-    def __init__(self, note_dict):
-        self.note_dict = note_dict
-        self.phrase_matches = []
-
-    def add_phrase_match(self, phrase_match):
-        self.phrase_matches.append(phrase_match)
-
+    def add_phrase_match(self, phrase_match): 
+        self.phrase_matches.append(phrase_match) 
+    
     def finalize_phrase_matches(self):
         self.phrase_matches.sort(key=lambda x: x.match_start)
 
@@ -202,6 +201,7 @@ class ClinicianNotes(object):
             self,
             input_file,
             note_keyword="NOTE",
+            is_rpdr = False,
             patient_keyword="EMPI",
             extract_numerical_value=False):
 
@@ -209,16 +209,10 @@ class ClinicianNotes(object):
         self.report_type = None
         self.ignore_punctuation = False
 
-
-        #if rpdr:
-        #    self._process_rpdr_file()
-        #    self.note_dicts = []
-        #else:
-        #    df = clean_df()
-        #    self.note_dicts = df.to_dict('records')
-
         phrase_type = ""
         extract_date = False
+
+        #TODO cut down to hash table
 
         if extract_numerical_value:
             self.phrase_type = PHRASE_TYPE_NUM
@@ -231,13 +225,26 @@ class ClinicianNotes(object):
         self.note_keyword = note_keyword
         self.extract_numerical_value = extract_numerical_value
 
+        if is_rpdr:
+            self.note_dicts = self.handle_rpdr(input_file)
+        elif input_file.split(".")[1] == "xls":
+            self.note_dicts = self.handle_xls(input_file)
+
+
+
+
+    def handle_rpdr(self,input_file):
         rpdr_notes = process_rpdr_file_unannotated(input_file)
 
         rpdr_notes = self._filter_rpdr_notes_by_column_val(
                 rpdr_notes, self.report_description, self.report_type)
 
-        self.note_dicts = [r.get_dictionary() for r in rpdr_notes]
+        return([r.get_dictionary() for r in rpdr_notes])
 
+    def handle_xls(self,input_file):
+        df = pd.read_excel(input_file)
+        df = self.clean_df(df, [self.note_keyword], False)
+        return(df.to_dict('records'))
 
     def search_phrases(self,phrases):
         self.phrases = [p.strip() for p in phrases.split(',')]
@@ -257,6 +264,7 @@ class ClinicianNotes(object):
     def output_csv(self):
         pass
 
+
     def _extract_values_from_notes(self,phrases):
         #note_dicts, phrase_type, phrases, note_key, ignore_punctuation):
         """Return a list of NotePhraseMatches for each note in note_dict."""
@@ -269,6 +277,77 @@ class ClinicianNotes(object):
             phrase_matches = self._extract_phrase_from_notes(note_dict)
             note_phrase_matches.append(phrase_matches)
         return(note_phrase_matches)
+
+    def _extract_phrase_from_notes(self, note_dict):
+        """Return a PhraseMatch object with the value as a binary 0/1 indicating
+        whether one of the phrases was found in note"""
+
+        string_lookup = {
+            self.PHRASE_TYPE_WORD : [
+                r'(\s%s\s)',
+                r'(^%s\s)',
+                r'(\s%s$)',
+                '(^%s$)',
+                r'(\s%s[\,\.\?\!\-])',
+                r'(^%s[\,\.\?\!\-])'],
+            self.PHRASE_TYPE_NUM : ['(?:%s)\s*(?:of|is|was|were|are|\:)?[:]*[\s]*([0-9]+\.?[0-9]*)'],
+            self.PHRASE_TYPE_DATE: [
+                                    r'(?:%s)\s*(?:of|is|was|were|are|\:)?[:]*[\s]*(\d+/\d+/\d+)',
+                                    '(?:%s)\s*(?:of|is|was|were|are|\:)?[:]*[\s]*(\d+-\d+-\d+)'
+                                    ]
+
+        }
+
+        pattern_strings = string_lookup[self.phrase_type]
+
+        try:
+            note = str(note_dict[self.note_keyword])
+        except KeyError:
+            print("Wrong Note Keyword entered")
+            raise
+
+        phrase_matches = NotePhraseMatches(note_dict)
+
+        for phrase in self.phrases:
+
+            for pattern_string in pattern_strings:
+
+                pattern_string = pattern_string % phrase
+                re_flags = re.I | re.M | re.DOTALL
+                pattern = re.compile(pattern_string, flags=re_flags)
+                match_iter = pattern.finditer(note)
+
+                try:
+                    while True:
+                        match = next(match_iter)
+
+                        try:
+                            float_create = float(match.groups()[0])
+                        except ValueError:
+                            float_create = None
+
+                        extracted_value_lookup = {
+                            self.PHRASE_TYPE_WORD : 1,
+                            self.PHRASE_TYPE_NUM : float_create,
+                            self.PHRASE_TYPE_DATE : match.groups()[0]
+
+                        }
+
+                        extracted_value = extracted_value_lookup[self.phrase_type]
+
+                        #TODO do you need this PhraseMatch Object? Use a container instead? named tuple?
+                        new_match = PhraseMatch(extracted_value, match.start(),
+                                                match.end(), phrase)
+
+                        phrase_matches.add_phrase_match(new_match)
+
+                except StopIteration:
+                    continue
+
+        phrase_matches.finalize_phrase_matches()
+        return phrase_matches
+
+
 
 
 
@@ -312,63 +391,6 @@ class ClinicianNotes(object):
             new_df = new_df.append(row)
         return new_df
 
-    def _extract_phrase_from_notes(self, note_dict):
-        """Return a PhraseMatch object with the value as a binary 0/1 indicating
-        whether one of the phrases was found in note"""
-
-        if self.phrase_type == self.PHRASE_TYPE_WORD:
-            pattern_strings = [
-                r'(\s%s\s)',
-                r'(^%s\s)',
-                r'(\s%s$)',
-                '(^%s$)',
-                r'(\s%s[\,\.\?\!\-])',
-                r'(^%s[\,\.\?\!\-])']
-        elif phrase_type == PHRASE_TYPE_NUM:
-            pattern_strings = [
-                '(?:%s)\s*(?:of|is|was|were|are|\:)?[:]*[\s]*([0-9]+\.?[0-9]*)']
-        elif phrase_type == PHRASE_TYPE_DATE:
-            pattern_strings = [
-                r'(?:%s)\s*(?:of|is|was|were|are|\:)?[:]*[\s]*(\d+/\d+/\d+)',
-                '(?:%s)\s*(?:of|is|was|were|are|\:)?[:]*[\s]*(\d+-\d+-\d+)']
-        else:
-            raise Exception('Invalid phrase extraction type.')
-
-        note = str(note_dict[self.note_keyword])
-
-        phrase_matches = NotePhraseMatches(note_dict)
-        for phrase in self.phrases:
-            for pattern_string in pattern_strings:
-                pattern_string = pattern_string % phrase
-                re_flags = re.I | re.M | re.DOTALL
-                pattern = re.compile(pattern_string, flags=re_flags)
-                # pdb.set_trace()
-                try:
-                    match_iter = pattern.finditer(note)
-                except TypeError:
-                    print("This line is not working")
-                    pdb.set_trace()
-
-                try:
-                    while True:
-                        match = next(match_iter)
-
-                        if self.phrase_type == self.PHRASE_TYPE_WORD:
-                            extracted_value = 1
-                        elif self.phrase_type == self.PHRASE_TYPE_NUM:
-                            extracted_value = float(match.groups()[0])
-                        elif self.phrase_type == self.PHRASE_TYPE_DATE:
-                            extracted_value = match.groups()[0]
-                        new_match = PhraseMatch(extracted_value, match.start(),
-                                                match.end(), phrase)
-                        phrase_matches.add_phrase_match(new_match)
-
-                except StopIteration:
-                    continue
-
-        phrase_matches.finalize_phrase_matches()
-        return phrase_matches
-
 
 
     def _write_csv_output(self,note_phrase_matches, note_key, output_fname):
@@ -402,7 +424,7 @@ class ClinicianNotes(object):
         df = pd.DataFrame(dict_list)
         # df['MATCHES'] = df['MATCHES'].astype('object')
         df.index = np.arange(0, df.shape[0])
-        df = clean_df(df, [RPDR_NOTE_KEYWORD], False)
+        df = self.clean_df(df, [RPDR_NOTE_KEYWORD], False)
         df.to_csv(output_fname)
 
         writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
@@ -447,21 +469,21 @@ def run_regex(
     #notes.output_csv(output_filename)
 
 
-#def run_regex(
-#        input_filename,
-#        phrases,
-#        output_filename='output.csv',
-#        is_rpdr=True,
-#        note_keyword=RPDR_NOTE_KEYWORD,
-#        patient_keyword=RPDR_PATIENT_KEYWORD,
-#        extract_numerical_value=False,
-#        extract_date=False,
-#        report_description=None,
-#        report_type=None,
-#        ignore_punctuation=False):
-#
-#    #TODO clean phrases
-#
+def run_regex(
+        input_filename,
+        phrases,
+        output_filename='output.csv',
+        is_rpdr=True,
+        note_keyword=RPDR_NOTE_KEYWORD,
+        patient_keyword=RPDR_PATIENT_KEYWORD,
+        extract_numerical_value=False,
+        extract_date=False,
+        report_description=None,
+        report_type=None,
+        ignore_punctuation=False):
+
+    #TODO clean phrases
+
 #    if extract_numerical_value:
 #        phrase_type = PHRASE_TYPE_NUM
 #    elif extract_date:
@@ -492,18 +514,21 @@ def run_regex(
 #
 #    note_phrase_matches = _extract_values_from_notes(
 #        note_dicts, phrase_type, phrases, note_keyword, ignore_punctuation)
-#    _write_csv_output(note_phrase_matches, note_keyword, output_filename)
+    
+    note = ClinicianNotes('duke_notes.xls',is_rpdr=is_rpdr,note_keyword="TEXT",patient_keyword="ROW_ID")
+    note_phrase_matches = note.search_phrases(phrases)
+ 
+
+    note._write_csv_output(note_phrase_matches, note_keyword, output_filename)
 
 
 #
 if __name__ == '__main__':
-    note = ClinicianNotes('test_deidentified_rpdr_format.txt')
-    notes = note.search_phrases('Patient')
-    print(notes)
+    #note = ClinicianNotes('test_deidentified_rpdr_format.txt',is_rpdr=True)
 
     # run_regex(sys.argv[1],'Patient', 'output.csv',sys.argv[2],sys.argv[3],sys.argv[4])
     # C:\Users\dk242>"C:\Program Files\Python35\DukeClinicalRegexTest-master\src\extract_values.py" "C:\Users\dk242\Desktop\acp_Notes_Comma.csv" "" "NOTES" "MRN"
-    # run_regex('duke_notes.xls','patient', 'output.csv',"","TEXT","HADM_ID")
+    run_regex('duke_notes.xls','patient', 'output.csv',"","TEXT","HADM_ID")
     #run_regex(
     #    sys.argv[1],
     #    'Patient',
