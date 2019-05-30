@@ -321,7 +321,7 @@ def run_regex(input_filename, phrases, output_filename='output.csv', is_rpdr=Tru
 
     else:
         # pipe delimiated SEPARATED 
-        df = pd.read_csv(input_filename,sep="|")
+        df = pd.read_csv(input_filename,sep=",")
         df = clean_df(df, [note_keyword], False)
         note_dicts = df.to_dict('records')
 
