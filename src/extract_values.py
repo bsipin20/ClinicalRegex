@@ -12,6 +12,7 @@ import pandas as pd
 def _remove_punctuation(s):
     return s.translate(None, string.punctuation)
 
+
 def clean_phrase(phrase, needs_decode=True):
     if isinstance(phrase, float):
         return phrase
@@ -230,10 +231,7 @@ class ClinicianNotes(object):
         elif input_file.split(".")[1] == "xls":
             self.note_dicts = self.handle_xls(input_file)
         elif input_file.split(".")[1] == "csv":
-                self.note_dicts = self.handle_csv(input_file)
-
-
-
+            self.note_dicts = self.handle_csv(input_file)
 
 
 
@@ -246,15 +244,18 @@ class ClinicianNotes(object):
         return([r.get_dictionary() for r in rpdr_notes])
 
     def handle_xls(self,input_file):
-        df = pd.read_excel(input_file)
+        df = pd.read_excel(input_file,usecols=[self.patient_keyword,self.note_keyword])
         df = self.clean_df(df, [self.note_keyword], False)
         return(df.to_dict('records'))
+
 
     def handle_csv(self,input_file):
-        df = pd.read_csv(input_file)
+        df = pd.read_csv(input_file,usecols=[self.patient_keyword,self.note_keyword])
         df = self.clean_df(df, [self.note_keyword], False)
-        return(df.to_dict('records'))
+        #dtype1 = np.dtype([('patient', 'str'), ('note', 'st')])
 
+
+        return(df.to_dict('records'))
 
 
     def search_phrases(self,phrases):
@@ -394,6 +395,7 @@ class ClinicianNotes(object):
         # ALL NOTES
         # TODO
         # SPECIFY DTYPES????? MAYBE IDK HOW
+
         for label in text_columns:
             if label in df:
                 df[label] = df[label].map(lambda x: clean_phrase(x, needs_decode))
@@ -451,30 +453,30 @@ RPDR_PATIENT_KEYWORD = 'EMPI'
 
 
 
-def run_regex(
-        input_filename,
-        phrases,
-        output_filename='output.csv',
-        is_rpdr=True,
-        note_keyword=RPDR_NOTE_KEYWORD,
-        patient_keyword=RPDR_PATIENT_KEYWORD,
-        extract_numerical_value=False,
-        extract_date=False,
-        report_description=None,
-        report_type=None,
-        ignore_punctuation=False):
- 
-    if extract_numerical_value:
-        phrase_type = PHRASE_TYPE_NUM
-    elif extract_date:
-        phrase_type = PHRASE_TYPE_DATE
-    else:
-        phrase_type = PHRASE_TYPE_WORD
-    phrases = [p.strip() for p in phrases.split(',')]
-
-    is_rpdr = bool(is_rpdr)
-
-    notes = ClinicianNotes(filename,is_rpdr,note_keyword,patient_keyword)
+#def run_regex(
+#        input_filename,
+#        phrases,
+#        output_filename='output.csv',
+#        is_rpdr=True,
+#        note_keyword=RPDR_NOTE_KEYWORD,
+#        patient_keyword=RPDR_PATIENT_KEYWORD,
+#        extract_numerical_value=False,
+#        extract_date=False,
+#        report_description=None,
+#        report_type=None,
+#        ignore_punctuation=False):
+# 
+#    if extract_numerical_value:
+#        phrase_type = PHRASE_TYPE_NUM
+#    elif extract_date:
+#        phrase_type = PHRASE_TYPE_DATE
+#    else:
+#        phrase_type = PHRASE_TYPE_WORD
+#    phrases = [p.strip() for p in phrases.split(',')]
+#
+#    is_rpdr = bool(is_rpdr)
+#
+#    notes = ClinicianNotes(filename,is_rpdr,note_keyword,patient_keyword)
 
     #notes.search_phrases(phrases)
     #notes.output_csv(output_filename)
