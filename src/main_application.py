@@ -51,6 +51,7 @@ class MainApplication(tk.Frame):
             messagebox.showerror(title="Error", message="Please input comma-separated phrases to search for. ")
             return
 
+        #TODO clean
         rpdr_checkbox = self.rpdr_checkbox.var.get()
         if rpdr_checkbox == 0:
             note_keyword = self.note_key_entry.get()

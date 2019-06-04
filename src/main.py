@@ -1,4 +1,5 @@
 import tkinter as tk
+
 from main_application import MainApplication
 
 
