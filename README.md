@@ -2,11 +2,7 @@
 
 
 ## Download Git
-Download zip file from this link
-
-https://github.com/bsipin20/DukeClinicalRegexTest/releases/tag/0.4-alpha
-
-Unzip file and move folder to Desktop
+git clone latest code from master branch at https://github.com/bsipin20/ClinicalRegex.git
 
 ## Install dependencies
 Open terminal on mac (press command + space and type in terminal and hit enter)
