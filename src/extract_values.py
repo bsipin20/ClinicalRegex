@@ -17,7 +17,7 @@ def clean_phrase(phrase, needs_decode=True):
     if isinstance(phrase, float):
         return phrase
     if needs_decode:
-        phrase = phrase.decode('ascii', errors='ignore')
+        phrase = phrase.decode('latin-1', errors='ignore')
     cleaned = str(
         phrase.replace(
             '\r\r',
@@ -36,11 +36,17 @@ def clean_phrase(phrase, needs_decode=True):
 
 
 def read_rpdr(filename):
+    fileContesnts = open(filename,"r").read()
+    f = open(filename,"w", newline="\n")
+    f.write(filecontents)
+    f.close()
 
     with open(filename, 'rb') as rpdr_file:
         rpdr_lines = rpdr_file.readlines()
-        rpdr_lines = [clean_phrase(line) for line in rpdr_lines]
+        #rpdr_lines = [clean_phrase(line) for line in rpdr_lines]
+        print(rpdr_lines)
         rpdr_lines = [line for line in rpdr_lines if len(line) > 0]
+
     return(rpdr_lines)
 
 def process_rpdr_file_unannotated(filename):
