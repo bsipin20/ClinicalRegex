@@ -441,11 +441,10 @@ class ClinicianNotes(object):
         df['MATCHES'] = df['MATCHES'].astype('object')
         df.index = np.arange(0, df.shape[0])
         df = self.clean_df(df, [RPDR_NOTE_KEYWORD], False)
-        #df.to_csv(output_fname,encoding="utf-8")
-        print(df.head())
+        #df.to_csv('diff.csv',encoding="utf-8")
         with open(output_fname, mode='w', newline='\n') as f:
             df.to_csv(f, sep=",", float_format='%.2f',
-                              index=False)
+                              index=True)
 
         #writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
         #df.to_excel(writer, 'Sheet1')
@@ -546,7 +545,8 @@ if __name__ == '__main__':
 
     # run_regex(sys.argv[1],'Patient', 'output.csv',sys.argv[2],sys.argv[3],sys.argv[4])
     # C:\Users\dk242>"C:\Program Files\Python35\DukeClinicalRegexTest-master\src\extract_values.py" "C:\Users\dk242\Desktop\acp_Notes_Comma.csv" "" "NOTES" "MRN"
-    run_regex('duke_notes.xls','patient', 'output.csv',"","TEXT","HADM_ID")
+    #run_regex('duke_notes.xls','patient', 'output.csv',"","TEXT","HADM_ID")
+    run_regex("test_deidentified_rpdr_format.txt","Patient")
     #run_regex(
     #    sys.argv[1],
     #    'Patient',

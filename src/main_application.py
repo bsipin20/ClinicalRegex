@@ -83,7 +83,9 @@ class MainApplication(tk.Frame):
     # Functions that change display
     def refresh_viewer(self, output_fname):
         self.data_model.output_fname = output_fname
-        self.data_model.output_df = pd.read_csv(self.data_model.output_fname,encoding='utf-8',index_col=0, header=0, dtype=object)
+        self.data_model.output_df = pd.read_csv(self.data_model.output_fname,index_col=0, header=0, dtype=object)
+        print(self.data_model.output_df)
+
         self.refresh_model()
 
     def refresh_model(self):
@@ -99,6 +101,7 @@ class MainApplication(tk.Frame):
 
     def display_output_note(self):
         current_note_row = self.data_model.display_df.iloc[self.data_model.current_row_index]
+        print(current_note_row)
 
         try:
             current_note_text = current_note_row[self.note_key]
