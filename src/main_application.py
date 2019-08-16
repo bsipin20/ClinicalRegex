@@ -11,6 +11,7 @@ RPDR_PATIENT_KEYWORD = 'EMPI'
 
 class MainApplication(tk.Frame):
     def __init__(self, master):
+
         tk.Frame.__init__(self, master)
         self.master = master
         self.setup_interface(master)
@@ -82,7 +83,7 @@ class MainApplication(tk.Frame):
     # Functions that change display
     def refresh_viewer(self, output_fname):
         self.data_model.output_fname = output_fname
-        self.data_model.output_df = pd.read_csv(self.data_model.output_fname, index_col=0, header=0, dtype=object)
+        self.data_model.output_df = pd.read_csv(self.data_model.output_fname,encoding='utf-8',engine='c',index_col=0, header=0, dtype=object)
         self.refresh_model()
 
     def refresh_model(self):
@@ -98,6 +99,7 @@ class MainApplication(tk.Frame):
 
     def display_output_note(self):
         current_note_row = self.data_model.display_df.iloc[self.data_model.current_row_index]
+
         try:
             current_note_text = current_note_row[self.note_key]
         except:
@@ -122,6 +124,7 @@ class MainApplication(tk.Frame):
 
         tag_start = '1.0'
         # Add highlighting 
+
         for start, end in match_indices:
             pos_start = '{}+{}c'.format(tag_start, start)
             pos_end = '{}+{}c'.format(tag_start, end)

@@ -349,7 +349,7 @@ class ClinicianNotes(object):
                         extracted_value = extracted_value_lookup[self.phrase_type]
 
                         #TODO do you need this PhraseMatch Object? Use a container instead? named tuple?
-                        print(match.start())
+                        #print(match.start())
                         new_match = PhraseMatch(extracted_value, match.start(),
                                                 match.end(), phrase)
 
