@@ -83,7 +83,7 @@ class MainApplication(tk.Frame):
     # Functions that change display
     def refresh_viewer(self, output_fname):
         self.data_model.output_fname = output_fname
-        self.data_model.output_df = pd.read_csv(self.data_model.output_fname,encoding='utf-8',engine='c',index_col=0, header=0, dtype=object)
+        self.data_model.output_df = pd.read_csv(self.data_model.output_fname,encoding='utf-8',index_col=0, header=0, dtype=object)
         self.refresh_model()
 
     def refresh_model(self):

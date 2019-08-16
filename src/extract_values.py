@@ -438,13 +438,17 @@ class ClinicianNotes(object):
             dict_list.append(note_phrase_match.note_dict)
 
         df = pd.DataFrame(dict_list)
-        # df['MATCHES'] = df['MATCHES'].astype('object')
+        df['MATCHES'] = df['MATCHES'].astype('object')
         df.index = np.arange(0, df.shape[0])
         df = self.clean_df(df, [RPDR_NOTE_KEYWORD], False)
-        df.to_csv(output_fname)
+        #df.to_csv(output_fname,encoding="utf-8")
+        print(df.head())
+        with open(output_fname, mode='w', newline='\n') as f:
+            df.to_csv(f, sep=",", float_format='%.2f',
+                              index=False)
 
-        writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
-        df.to_excel(writer, 'Sheet1')
+        #writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
+        #df.to_excel(writer, 'Sheet1')
 
 
 PHRASE_TYPE_WORD = 0
