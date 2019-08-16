@@ -173,6 +173,7 @@ class NotePhraseMatches(object):
         self.phrase_matches.sort(key=lambda x: x.match_start)
 
 
+
 class PhraseMatch(object):
     """Describes a single phrase match to a single RPDR Note for a phrase."""
 
@@ -288,8 +289,8 @@ class ClinicianNotes(object):
                 note_dict[self.note_keyword].translate(None, string.punctuation)
             phrase_matches = self._extract_phrase_from_notes(note_dict)
             note_phrase_matches.append(phrase_matches)
+        test = note_phrase_matches[1].finalize_phrase_matches()
         return(note_phrase_matches)
-
     def _extract_phrase_from_notes(self, note_dict):
         """Return a PhraseMatch object with the value as a binary 0/1 indicating
         whether one of the phrases was found in note"""
@@ -348,8 +349,10 @@ class ClinicianNotes(object):
                         extracted_value = extracted_value_lookup[self.phrase_type]
 
                         #TODO do you need this PhraseMatch Object? Use a container instead? named tuple?
+                        print(match.start())
                         new_match = PhraseMatch(extracted_value, match.start(),
                                                 match.end(), phrase)
+
 
                         phrase_matches.add_phrase_match(new_match)
 
