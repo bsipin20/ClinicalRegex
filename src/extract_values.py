@@ -441,10 +441,13 @@ class ClinicianNotes(object):
         df['MATCHES'] = df['MATCHES'].astype('object')
         df.index = np.arange(0, df.shape[0])
         df = self.clean_df(df, [RPDR_NOTE_KEYWORD], False)
+
         #df.to_csv('diff.csv',encoding="utf-8")
         with open(output_fname, mode='w', newline='\n') as f:
             df.to_csv(f, sep=",", float_format='%.2f',
                               index=True)
+
+        # write excel
 
         #writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
         #df.to_excel(writer, 'Sheet1')
