@@ -78,13 +78,13 @@ class MainApplication(tk.Frame):
             except:
                 messagebox.showerror(title="Error", message="Something went wrong, did you select an appropriately formatted RPDR file to perform the Regex on?")
                 return
+
         self.refresh_viewer(output_fname)
 
     # Functions that change display
     def refresh_viewer(self, output_fname):
         self.data_model.output_fname = output_fname
-        self.data_model.output_df = pd.read_csv(self.data_model.output_fname,index_col=0, header=0, dtype=object)
-        print(self.data_model.output_df)
+        self.data_model.output_df = pd.read_excel(self.data_model.output_fname,index_col=0, header=0, dtype=object)
 
         self.refresh_model()
 
@@ -326,7 +326,7 @@ class MainApplication(tk.Frame):
         regex_button.grid(column=0, row=1, sticky='sw')
 
         self.regex_label = tk.Entry(right_regex_frame, font=labelfont)
-        self.regex_label.insert(0, 'output.csv')
+        self.regex_label.insert(0, 'output.xlsx')
         self.regex_label.grid(column=1, row=1, sticky='se')
 
         # Right regex options container

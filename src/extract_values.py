@@ -442,12 +442,13 @@ class ClinicianNotes(object):
         df.index = np.arange(0, df.shape[0])
         df = self.clean_df(df, [RPDR_NOTE_KEYWORD], False)
         #df.to_csv('diff.csv',encoding="utf-8")
-        with open(output_fname, mode='w', newline='\n') as f:
-            df.to_csv(f, sep=",", float_format='%.2f',
-                              index=True)
+        #with open(output_fname, mode='w', newline='\n') as f:
+        #    df.to_csv(f, sep=",", float_format='%.2f',
+        #                      index=True)
 
-        #writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
-        #df.to_excel(writer, 'Sheet1')
+        writer = pd.ExcelWriter(str(output_fname[:-4] + 'xlsx'),engine="xlsxwriter")
+        df.to_excel(writer, 'Sheet1')
+        writer.save()
 
 
 PHRASE_TYPE_WORD = 0
@@ -459,39 +460,11 @@ RPDR_PATIENT_KEYWORD = 'EMPI'
 
 
 
-#def run_regex(
-#        input_filename,
-#        phrases,
-#        output_filename='output.csv',
-#        is_rpdr=True,
-#        note_keyword=RPDR_NOTE_KEYWORD,
-#        patient_keyword=RPDR_PATIENT_KEYWORD,
-#        extract_numerical_value=False,
-#        extract_date=False,
-#        report_description=None,
-#        report_type=None,
-#        ignore_punctuation=False):
-# 
-#    if extract_numerical_value:
-#        phrase_type = PHRASE_TYPE_NUM
-#    elif extract_date:
-#        phrase_type = PHRASE_TYPE_DATE
-#    else:
-#        phrase_type = PHRASE_TYPE_WORD
-#    phrases = [p.strip() for p in phrases.split(',')]
-#
-#    is_rpdr = bool(is_rpdr)
-#
-#    notes = ClinicianNotes(filename,is_rpdr,note_keyword,patient_keyword)
-
-    #notes.search_phrases(phrases)
-    #notes.output_csv(output_filename)
-
 
 def run_regex(
         input_filename,
         phrases,
-        output_filename='output.csv',
+        output_filename='output.xlsx',
         is_rpdr=True,
         note_keyword=RPDR_NOTE_KEYWORD,
         patient_keyword=RPDR_PATIENT_KEYWORD,
@@ -500,46 +473,12 @@ def run_regex(
         report_description=None,
         report_type=None,
         ignore_punctuation=False):
-
-    #TODO clean phrases
-
-#    if extract_numerical_value:
-#        phrase_type = PHRASE_TYPE_NUM
-#    elif extract_date:
-#        phrase_type = PHRASE_TYPE_DATE
-#    else:
-#        phrase_type = PHRASE_TYPE_WORD
-#    phrases = [p.strip() for p in phrases.split(',')]
-#
-#    is_rpdr = bool(is_rpdr)
-#    ##########################################################
-#
-#    if is_rpdr:
-#        rpdr_notes = read_rpdr(input_filename)
-#        rpdr_notes = _filter_rpdr_notes_by_column_val(
-#            rpdr_notes, report_description, report_type)
-#        note_dicts = [r.get_dictionary() for r in rpdr_notes]
-#
-#    elif input_filename.split(".")[1] == "xls":
-#        df = pd.read_excel(input_filename)
-#        df = clean_df(df, [note_keyword], False)
-#        note_dicts = df.to_dict('records')
-#
-#    else:
-#        # pipe delimiated SEPARATED choose delimited path
-#        df = pd.read_csv(input_filename, sep="|")
-#        df = clean_df(df, [note_keyword], False)
-#        note_dicts = df.to_dict('records')
-#
-#    note_phrase_matches = _extract_values_from_notes(
-#        note_dicts, phrase_type, phrases, note_keyword, ignore_punctuation)
-    
+   
     note = ClinicianNotes(input_filename,is_rpdr=is_rpdr,note_keyword=note_keyword,patient_keyword=patient_keyword)
     note_phrase_matches = note.search_phrases(phrases)
     note._write_csv_output(note_phrase_matches, note_keyword, output_filename)
 
 
-#
 if __name__ == '__main__':
     #note = ClinicianNotes('test_deidentified_rpdr_format.txt',is_rpdr=True)
 
