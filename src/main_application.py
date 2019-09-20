@@ -186,6 +186,7 @@ class MainApplication(tk.Frame):
         self.patient_id_entry.grid()
 
     def setup_interface(self, root):
+
         # Define fonts
         titlefont = font.Font(family='Open Sans', size=18, weight='bold')
         boldfont = font.Font(size=16, family='Open Sans', weight='bold')
