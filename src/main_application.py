@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import font, filedialog, messagebox
 from model import DataModel
 from extract_values import run_regex
+from rpdr import ReadRPDR
 import pandas as pd
 import ast
 
@@ -38,7 +39,7 @@ class MainApplication(tk.Frame):
                 self.patient_key = self.patient_id_entry.get()
             self.refresh_viewer(output_fname)
 
-    def on_run_regex(self): 
+    def on_run_regex_old(self): 
         if not self.data_model.input_fname:
             # Warning
             messagebox.showerror(title="Error", message="Please select an input file using the 'Select File' button.")
@@ -80,63 +81,93 @@ class MainApplication(tk.Frame):
                 return
         self.refresh_viewer(output_fname)
 
+    def on_run_regex(self):
+
+        file_loc = self.data_model.input_fname
+ 
+        output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
+
+        opts = {
+            'r_encoding' : 'utf-8',
+            'preserve_header' : True
+        }
+
+
+        self.data_generator = ReadRPDR(options=opts,file_location=file_loc).read_data()
+        self.refresh_viewer(output_fname)
+
     # Functions that change display
     def refresh_viewer(self, output_fname):
-        self.data_model.output_fname = output_fname
-        self.data_model.output_df = pd.read_csv(self.data_model.output_fname,index_col=0, header=0, dtype=object)
-        print(self.data_model.output_df)
+        #self.data_model.output_fname = output_fname
+        #self.data_model.output_df = pd.read_csv(self.data_model.output_fname,index_col=0, header=0, dtype=object)
 
         self.refresh_model()
 
     def refresh_model(self):
-        self.data_model.current_row_index = 0
-        if self.checkvar:
-            self.data_model.display_df = self.data_model.output_df[self.data_model.output_df['EXTRACTED_VALUE'] == '1']
-        else:
-            self.data_model.display_df = self.data_model.output_df.copy()
+        #self.data_model.current_row_index = 0
+        #if self.checkvar:
+        #    self.data_model.display_df = self.data_model.output_df[self.data_model.output_df['EXTRACTED_VALUE'] == '1']
+        #else:
+        #    self.data_model.display_df = self.data_model.output_df.copy()
 
-        self.data_model.num_notes = self.data_model.display_df.shape[0]
-        self.regex_file_text.config(text=self.data_model.output_fname.split('/')[-1])
+        #self.data_model.num_notes = self.data_model.display_df.shape[0]
+        #self.regex_file_text.config(text=self.data_model.output_fname.split('/')[-1])
+
         self.display_output_note()
 
     def display_output_note(self):
-        current_note_row = self.data_model.display_df.iloc[self.data_model.current_row_index]
-        print(current_note_row)
+        #current_note_row = self.data_model.display_df.iloc[self.data_model.current_row_index]
+        current_note_row  = next(self.data_generator)
+        print(self.note_key)
+        print(self.patient_key)
+        #self.patient_key = current_note_row['metadata']['empi']
+        #print(self.patient_key)
+
 
         try:
-            current_note_text = current_note_row[self.note_key]
+            #current_note_text = current_note_row[self.note_key]
+            current_note_text = current_note_row['data']
         except:
             messagebox.showerror(title='Error', message='Unable to retrieve note text. Did you select the correct key?')
             return
 
         try:
-            current_patient_id = current_note_row[self.patient_key]
+
+            #current_patient_id = current_note_row[self.patient_key]
+            current_patient_id = current_note_row['metadata']['empi']
+
         except:
             messagebox.showerror(title='Error', message='Unable to retrieve patient ID. Did you select the correct key?')
             return
 
-        self.number_label.config(text='%d of %d' % (self.data_model.current_row_index + 1, self.data_model.num_notes))
+        #self.number_label.config(text='%d of %d' % (self.data_model.current_row_index + 1, self.data_model.num_notes))
+        self.number_label.config(text='%d of %d' % (1, 1000))
+
+
         self.patient_num_label.config(text='Patient ID: %s' % current_patient_id)
 
-        match_indices = ast.literal_eval(current_note_row['MATCHES'])
+        #match_indices = ast.literal_eval(current_note_row['MATCHES'])
 
         self.pttext.config(state=tk.NORMAL)
         self.pttext.delete(1.0, tk.END)
-        self.pttext.insert(tk.END, current_note_text)
+        self.pttext.insert(tk.END, ''.join(current_note_text))
         self.pttext.config(state=tk.DISABLED)
 
         tag_start = '1.0'
         # Add highlighting 
 
-        for start, end in match_indices:
-            pos_start = '{}+{}c'.format(tag_start, start)
-            pos_end = '{}+{}c'.format(tag_start, end)
-            self.pttext.tag_add('highlighted', pos_start, pos_end)
+        #for start, end in match_indices:
+        #    pos_start = '{}+{}c'.format(tag_start, start)
+        #    pos_end = '{}+{}c'.format(tag_start, end)
+        #    self.pttext.tag_add('highlighted', pos_start, pos_end)
         self.show_annotation()
+        
 
     def show_annotation(self):
         self.ann_textbox.delete(0, tk.END)
-        self.ann_textbox.insert(0, self.data_model.get_annotation())
+        view = self.current_note_row['data']
+        self.ann_textbox.insert(0, view)
+        #self.data_model.get_annotation())
 
     def on_save_annotation(self):
         annotation = self.ann_textbox.get()
@@ -150,9 +181,10 @@ class MainApplication(tk.Frame):
         self.display_output_note()
         
     def on_next(self):
-        self.on_save_annotation()
-        if self.data_model.current_row_index < self.data_model.num_notes:
-            self.data_model.current_row_index += 1
+        #self.on_save_annotation()
+        #if self.data_model.current_row_index < self.data_model.num_notes:
+        #    self.data_model.current_row_index += 1
+    
         self.display_output_note()
 
     ## GUI helper methods
