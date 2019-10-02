@@ -123,13 +123,14 @@ class MainApplication(tk.Frame):
         #self.patient_key = current_note_row['metadata']['empi']
         #print(self.patient_key)
 
-
         try:
             #current_note_text = current_note_row[self.note_key]
             current_note_text = current_note_row['data']
+            print(current_note_text)
         except:
             messagebox.showerror(title='Error', message='Unable to retrieve note text. Did you select the correct key?')
             return
+
 
         try:
 

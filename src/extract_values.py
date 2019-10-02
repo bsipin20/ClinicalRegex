@@ -8,6 +8,36 @@ import xlrd
 import numpy as np
 import pandas as pd
 
+def process_data(info):
+    """Generator for processing the data with the UC_PROPS"""
+
+    # go through the lines and perform any in-place modifications
+    for i, line in enumerate(info['data']):
+        # process user-specified properties  
+        if self.options['lowercase']:
+            info['data'][i] = line.lower()
+
+            # Remove blank lines
+    if self.options['ignore_blank_lines']:
+        info["data"] = [line for line in info["data"] if line.strip()]
+
+    # text wrapping
+    if self.wrap:
+        info["data"] = self.wrap.wrap(''.join(info['data']))
+        info["data"] = [line + "\n" for line in info["data"]]	# should not need to do this
+
+    if self.unwrapper:
+        # do not include the first line
+        unwrapped = self.unwrapper.process(''.join(info['data'][1:]))
+        info["data"] = [info["data"][0]] + self.unwrapper.render(unwrapped, "reflow").splitlines(True)
+        
+    return info
+
+def get_document( info):
+    document = ''.join(self.process_data(info)['data'])
+    return document
+
+
 
 def _remove_punctuation(s):
     return s.translate(None, string.punctuation)
@@ -291,6 +321,7 @@ class ClinicianNotes(object):
             note_phrase_matches.append(phrase_matches)
         test = note_phrase_matches[1].finalize_phrase_matches()
         return(note_phrase_matches)
+
     def _extract_phrase_from_notes(self, note_dict):
         """Return a PhraseMatch object with the value as a binary 0/1 indicating
         whether one of the phrases was found in note"""
@@ -320,6 +351,7 @@ class ClinicianNotes(object):
             raise
 
         phrase_matches = NotePhraseMatches(note_dict)
+        print(note_dict)
 
         for phrase in self.phrases:
 
@@ -413,10 +445,13 @@ class ClinicianNotes(object):
         """Write one CSV row for each phrase_match where the row contains all of
         the RPDR note keys along with the extracted numerical value at the end of
         the row."""
+
         dict_list = []
         for note_phrase_match in note_phrase_matches:
+
             note = note_phrase_match.note_dict[self.note_keyword]
             matches = []
+
             for phrase_match in note_phrase_match.phrase_matches:
 
                 match_start = phrase_match.match_start
@@ -441,7 +476,9 @@ class ClinicianNotes(object):
         df['MATCHES'] = df['MATCHES'].astype('object')
         df.index = np.arange(0, df.shape[0])
         df = self.clean_df(df, [RPDR_NOTE_KEYWORD], False)
+
         #df.to_csv('diff.csv',encoding="utf-8")
+
         with open(output_fname, mode='w', newline='\n') as f:
             df.to_csv(f, sep=",", float_format='%.2f',
                               index=True)
