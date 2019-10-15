@@ -98,27 +98,7 @@ class MainApplication(tk.Frame):
 
 
         self.data_generator = ReadRPDR(options=opts,file_location=file_loc).read_data() # MODEL CALL
-        self.display_output_note(output_fname)
-
-    # Functions that change display
-#    def refresh_viewer(self, output_fname):
-#        """ """ 
-#        #self.data_model.output_fname = output_fname
-#        #self.data_model.output_df = pd.read_csv(self.data_model.output_fname,index_col=0, header=0, dtype=object)
-#
-#        self.display_output_note()
-
-#    def refresh_model(self):
-#        #self.data_model.current_row_index = 0
-#        #if self.checkvar:
-#        #    self.data_model.display_df = self.data_model.output_df[self.data_model.output_df['EXTRACTED_VALUE'] == '1']
-#        #else:
-#        #    self.data_model.display_df = self.data_model.output_df.copy()
-#
-#        #self.data_model.num_notes = self.data_model.display_df.shape[0]
-#        #self.regex_file_text.config(text=self.data_model.output_fname.split('/')[-1])
-#
-#        self.display_output_note()
+        self.display_output_note()#output_fname)
 
     def display_output_note(self):
         """ displays highlighting """ 
