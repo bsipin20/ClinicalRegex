@@ -82,10 +82,14 @@ class MainApplication(tk.Frame):
         self.refresh_viewer(output_fname)
 
     def on_run_regex(self):
+        """ Passes clinician note file to Model """ 
 
+
+        # GETS FILE NAMe, passes global path to ReadRPDR
         file_loc = self.data_model.input_fname
  
         output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
+
 
         opts = {
             'r_encoding' : 'utf-8',
@@ -93,33 +97,34 @@ class MainApplication(tk.Frame):
         }
 
 
-        self.data_generator = ReadRPDR(options=opts,file_location=file_loc).read_data()
-        self.refresh_viewer(output_fname)
+        self.data_generator = ReadRPDR(options=opts,file_location=file_loc).read_data() # MODEL CALL
+        self.display_output_note(output_fname)
 
     # Functions that change display
-    def refresh_viewer(self, output_fname):
-        #self.data_model.output_fname = output_fname
-        #self.data_model.output_df = pd.read_csv(self.data_model.output_fname,index_col=0, header=0, dtype=object)
+#    def refresh_viewer(self, output_fname):
+#        """ """ 
+#        #self.data_model.output_fname = output_fname
+#        #self.data_model.output_df = pd.read_csv(self.data_model.output_fname,index_col=0, header=0, dtype=object)
+#
+#        self.display_output_note()
 
-        self.refresh_model()
-
-    def refresh_model(self):
-        #self.data_model.current_row_index = 0
-        #if self.checkvar:
-        #    self.data_model.display_df = self.data_model.output_df[self.data_model.output_df['EXTRACTED_VALUE'] == '1']
-        #else:
-        #    self.data_model.display_df = self.data_model.output_df.copy()
-
-        #self.data_model.num_notes = self.data_model.display_df.shape[0]
-        #self.regex_file_text.config(text=self.data_model.output_fname.split('/')[-1])
-
-        self.display_output_note()
+#    def refresh_model(self):
+#        #self.data_model.current_row_index = 0
+#        #if self.checkvar:
+#        #    self.data_model.display_df = self.data_model.output_df[self.data_model.output_df['EXTRACTED_VALUE'] == '1']
+#        #else:
+#        #    self.data_model.display_df = self.data_model.output_df.copy()
+#
+#        #self.data_model.num_notes = self.data_model.display_df.shape[0]
+#        #self.regex_file_text.config(text=self.data_model.output_fname.split('/')[-1])
+#
+#        self.display_output_note()
 
     def display_output_note(self):
+        """ displays highlighting """ 
         #current_note_row = self.data_model.display_df.iloc[self.data_model.current_row_index]
         current_note_row  = next(self.data_generator)
-        print(self.note_key)
-        print(self.patient_key)
+
         #self.patient_key = current_note_row['metadata']['empi']
         #print(self.patient_key)
 
