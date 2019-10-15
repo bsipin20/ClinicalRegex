@@ -417,6 +417,7 @@ class ClinicianNotes(object):
         for note_phrase_match in note_phrase_matches:
             note = note_phrase_match.note_dict[self.note_keyword]
             matches = []
+            print(note)
             for phrase_match in note_phrase_match.phrase_matches:
 
                 match_start = phrase_match.match_start
