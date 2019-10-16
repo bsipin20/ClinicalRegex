@@ -104,14 +104,8 @@ class ReadRPDR(ReadDelimTXT):
             # if it can't find it, put a warning
             if self.text_field is None:
                 self.put_warning(self.info['metadata']['filename'], 'Could not determine file\'s text field.')
+    #def _extract_phrase_from_notes(self,
 
-    def _find_matches(self,pattern,string):
-        """ finds match from string and returns coordinates """
-        start_index = string.find(pattern)
-        end_index = start_index + len(pattern)
-
-
-        return([start_index,end_index])
 
 
     def read_data(self):
@@ -133,11 +127,7 @@ class ReadRPDR(ReadDelimTXT):
             yield self.info
         # now go through the rest of the records
         for lines in super_generator:
-            # continue if there's nothing to process
-            print(lines)
-            if not lines['data']:
-                continue
-            # process the lines with helper
+
             self.read_helper(lines)
             # yield if there is something to yield
             if self.info['data']:

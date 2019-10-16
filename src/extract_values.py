@@ -1,5 +1,5 @@
 import csv
-import re
+import ee
 import string
 import sys
 import pdb
@@ -351,7 +351,6 @@ class ClinicianNotes(object):
             raise
 
         phrase_matches = NotePhraseMatches(note_dict)
-        print(note_dict)
 
         for phrase in self.phrases:
 
