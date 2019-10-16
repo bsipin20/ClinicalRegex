@@ -1,7 +1,7 @@
 
 """Contains class for reading in RPDR files"""
 import sys, traceback
-from read import ReadDelimTXT,ReadTXT
+from src.read import ReadDelimTXT,ReadTXT
 import configparser
 import os
 #from .read import ReadDelimTXT
@@ -104,6 +104,15 @@ class ReadRPDR(ReadDelimTXT):
             # if it can't find it, put a warning
             if self.text_field is None:
                 self.put_warning(self.info['metadata']['filename'], 'Could not determine file\'s text field.')
+
+    def _find_matches(self,pattern,string):
+        """ finds match from string and returns coordinates """
+        start_index = string.find(pattern)
+        end_index = start_index + len(pattern)
+
+
+        return([start_index,end_index])
+
 
     def read_data(self):
         """Generator to yield lines from each document in file"""
