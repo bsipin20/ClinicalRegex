@@ -420,8 +420,8 @@ def multi_run_regex(file_, phrases, output_fname, is_rpdr=True, note_keyword=RPD
 
     _write_csv_output(note_phrase_matches, note_keyword, output_fname) 
 
-#multi_run_regex('test_deidentified_rpdr_format.txt',['patient,Care','twice,weekly'], 'output.csv')
-run_regex('test_dataset_deidentified.csv',['patient'], 'output.csv',False,"text","ptid")
+multi_run_regex('test_deidentified_rpdr_format.txt',['patient,Care','twice,weekly'], 'output.csv')
+#run_regex('test_dataset_deidentified.csv',['patient'], 'output.csv',False,"text","ptid")
 #run_regex('all_notes_122017.csv',['patient,Care','chief,weekly'], 'output.csv',patient_keyword="
 #run_regex('all_notes_122017.csv', ['patient','chief'], 'output.csv', False, "TEXT", "HADM_ID")
             
