@@ -127,7 +127,6 @@ class ReadRPDR(ReadDelimTXT):
             yield self.info
         # now go through the rest of the records
         for lines in super_generator:
-
             self.read_helper(lines)
             # yield if there is something to yield
             if self.info['data']:

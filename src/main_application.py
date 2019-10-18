@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import font, filedialog, messagebox
-from model import DataModel
-from extract_values import run_regex
-from rpdr import ReadRPDR
+from src.model import DataModel
+from src.extract_values import run_regex
+from src.rpdr import ReadRPDR
+from src.helpers import find_matches,_extract_phrase_from_notes,_process_raw
 import pandas as pd
 import ast
 
@@ -48,7 +49,6 @@ class MainApplication(tk.Frame):
         output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
 
         # Retrieve phrases
-        phrases = self.regex_text.get(1.0, 'end-1c').strip()
         if phrases == self.original_regex_text or len(phrases) == 0:
             messagebox.showerror(title="Error", message="Please input comma-separated phrases to search for. ")
             return
@@ -84,6 +84,9 @@ class MainApplication(tk.Frame):
     def on_run_regex(self):
         """ Passes clinician note file to Model """ 
 
+        self.phrases = self.regex_text.get(1.0, 'end-1c').strip()
+
+
 
         # GETS FILE NAMe, passes global path to ReadRPDR
         file_loc = self.data_model.input_fname
@@ -96,25 +99,48 @@ class MainApplication(tk.Frame):
             'preserve_header' : True
         }
 
-
         self.data_generator = ReadRPDR(options=opts,file_location=file_loc).read_data() # MODEL CALL
-        self.display_output_note()#output_fname)
+        self.current_row_index  = 0
 
-    def display_output_note(self):
+        self.cache = []
+
+
+        self.display_output_note("next")#output_fname)
+
+
+
+
+
+    def display_output_note(self,direction):
         """ displays highlighting """ 
         #current_note_row = self.data_model.display_df.iloc[self.data_model.current_row_index]
-        current_note_row  = next(self.data_generator)
 
-        #self.patient_key = current_note_row['metadata']['empi']
-        #print(self.patient_key)
+    
+    
+        #current_note_row  = self.all_notes[self.current_row_index]#next(self.data_generator)
+
+        if direction == "next":
+            #TODO am i skipping the first one
+            current_note_row = next(self.data_generator)
+
+            self.cache.append(current_note_row)
+
+        
+        else: #direction == "prev":
+
+            
+            current_note_row = self.cache[-1]
+
+
+
 
         try:
             #current_note_text = current_note_row[self.note_key]
-            current_note_text = current_note_row['data']
-            print(current_note_text)
+            current_note_text= current_note_row['data']
         except:
             messagebox.showerror(title='Error', message='Unable to retrieve note text. Did you select the correct key?')
             return
+
 
 
         try:
@@ -126,27 +152,40 @@ class MainApplication(tk.Frame):
             messagebox.showerror(title='Error', message='Unable to retrieve patient ID. Did you select the correct key?')
             return
 
-        #self.number_label.config(text='%d of %d' % (self.data_model.current_row_index + 1, self.data_model.num_notes))
-        self.number_label.config(text='%d of %d' % (1, 1000))
-
-
-        self.patient_num_label.config(text='Patient ID: %s' % current_patient_id)
-
-        #match_indices = ast.literal_eval(current_note_row['MATCHES'])
-
-        self.pttext.config(state=tk.NORMAL)
-        self.pttext.delete(1.0, tk.END)
-        self.pttext.insert(tk.END, ''.join(current_note_text))
-        self.pttext.config(state=tk.DISABLED)
-
         tag_start = '1.0'
         # Add highlighting 
 
-        #for start, end in match_indices:
-        #    pos_start = '{}+{}c'.format(tag_start, start)
-        #    pos_end = '{}+{}c'.format(tag_start, end)
-        #    self.pttext.tag_add('highlighted', pos_start, pos_end)
-        self.show_annotation()
+        
+        #cleaned_note,match_indices = find_matches(self.phrases,current_note_text)
+        cleaned_note = _process_raw(current_note_text)
+        #phrases = list()
+        phrases = [p.strip() for p in self.phrases.split(",")]
+        #",".join(self.phrases)
+        #phrases.append(self.phrases)
+
+
+        match_indices = _extract_phrase_from_notes(phrases,cleaned_note)
+        print(cleaned_note)
+        print(self.phrases)
+        print(match_indices)
+
+
+        self.pttext.config(state=tk.NORMAL)
+        self.pttext.delete(1.0, tk.END)
+        self.pttext.insert(tk.END, " ".join(cleaned_note))
+        self.pttext.config(state=tk.DISABLED)
+
+
+        for start, end in match_indices:
+            pos_start = '{}+{}c'.format(tag_start, start)
+            pos_end = '{}+{}c'.format(tag_start, end)
+            self.pttext.tag_add('highlighted', pos_start, pos_end)
+
+
+        #''.join(current_note_text))
+
+
+        #self.show_annotation()
         
 
     def show_annotation(self):
@@ -161,17 +200,18 @@ class MainApplication(tk.Frame):
             self.data_model.write_to_annotation(annotation)
 
     def on_prev(self):
-        self.on_save_annotation()
-        if self.data_model.current_row_index > 0:
-            self.data_model.current_row_index -= 1
-        self.display_output_note()
+        #self.on_save_annotation()
+        #if self.current_row_index > 0:
+        #    self.current_row_index -= 1
+
+        self.display_output_note("prev")
         
     def on_next(self):
         #self.on_save_annotation()
-        #if self.data_model.current_row_index < self.data_model.num_notes:
-        #    self.data_model.current_row_index += 1
+        #if self.current_row_index  < self.num_notes-1:
+        #    self.current_row_index += 1
     
-        self.display_output_note()
+        self.display_output_note("next")
 
     ## GUI helper methods
     def clear_textbox(self, event, widget, original_text):
