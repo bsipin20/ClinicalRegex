@@ -101,62 +101,6 @@ class Read(UCPropMixin, object):
             'timer': None
         }
 
-    def _clean_note_phrase(self,note_phrase):
-        current_note = note_phrase.strip()
-        current_note = current_note.replace(
-            "$1$",
-            "").replace(
-            "$\\1$",
-            "").replace(
-            "$-1$",
-            "").replace(
-            "$\\-1$",
-            "").replace(
-                "$2$",
-                "").replace(
-                    "$\\2$",
-                    "").replace(
-                        "$-2$",
-                        "").replace(
-                            "$\\-2$",
-                            "").replace(
-                                "$3$",
-                                "").replace(
-                                    "$\\3$",
-                                    "").replace(
-                                        "$-3$",
-                                        "").replace(
-                                            "$\\-3$",
-            "")
-        return(current_note)
-
-    def _find_matches(self,pattern,string):
-        """ finds match from string and returns coordinates """
-        start_index = string.find(pattern)
-        end_index = start_index + len(pattern)
-
-        return([start_index,end_index])
-
-    def clean_phrase(phrase, needs_decode=True):
-        if isinstance(phrase, float):
-            return phrase
-        if needs_decode:
-            phrase = phrase.decode('ascii', errors='ignore')
-        cleaned = str(
-            phrase.replace(
-                '\r\r',
-                '\n').replace(
-                '\r',
-                '').replace(
-                    '||',
-                '|'))
-        cleaned = str(phrase.replace('\\r', '\\n'))
-        cleaned = re.sub(r'\n+', '\n', cleaned)
-        cleaned = re.sub(r' +', ' ', cleaned)
-        cleaned = re.sub(r'\t', ' ', cleaned)
-        cleaned = cleaned.strip('\r\n')
-        return str(cleaned.strip())
-
 
     def check_msg_queue(self, message=None):
         """Checks msg_queue for messages to cancel, pause, resume, etc."""
@@ -440,14 +384,6 @@ class ReadTXT(Read):
                                             "$\\-3$",
             "")
         return(current_note)
-
-    def _find_matches(self,pattern,string):
-        """ finds match from string and returns coordinates """
-        start_index = string.find(pattern)
-        end_index = start_index + len(pattern)
-
-        return([start_index,end_index])
-
 
 
 
