@@ -43,7 +43,7 @@ class Model(object):
     def __init__(self,options_,file_location_):
         t = ReadRPDR(options=options_,file_location=file_location_).read_data()
         self.notes = []
-        self.output_dicts = list()
+        self.output_dicts = dict()
         for i in t:
             new_note = copy.deepcopy(i)
             self.notes.append(new_note)
@@ -64,6 +64,15 @@ class Model(object):
             current_note = self.notes[self.current_index]
             return(current_note)
 
+    def get_annotation(self):
+        note = self.output_dicts[self.current_index]
+        annotation = ""
+        if "annotation" in note:
+            annotation = note['annotation']
+        return(annotation)
+
+
+
 
     def write_to_annotation(self,annotation):
         note = self.notes[self.current_index]
@@ -82,9 +91,18 @@ class Model(object):
             "annotation" : annotation
         }
         
-        
-        self.output_dicts.append(output_dict)
+        self.output_dicts[self.current_index] = output_dict 
 
+    def get_patient_id(self):
+        patient_key = 'empi'
+        note = self.notes[self.current_index]
+        return(note['metadata'][patient_key])
+
+    def get_length(self):
+        return(len(self.notes))
+
+    def get_index(self):
+        return(self.current_index)
 
 
     def prev(self):
@@ -94,9 +112,13 @@ class Model(object):
         return(current_note)
         
     def write_output(self,filename):
-        df = pd.DataFrame(self.output_dicts)
+        final_output = list()
+        
+        for k,v in self.output_dicts.items():
+            final_output.append(v)
+        
+        df = pd.DataFrame(final_output)
         file_ending = filename.split(".")[1]
-        print(file_ending)
         if file_ending == "csv":
             df.to_csv(filename)
         elif file_ending == "dta":

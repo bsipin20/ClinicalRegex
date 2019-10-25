@@ -102,6 +102,9 @@ class MainApplication(tk.Frame):
             #current_patient_id = current_note_row[self.patient_key]
         current_patient_id = current_note_row['metadata']['empi']
 
+        self.number_label.config(text='%d of %d' % (self.model.get_index()+ 1, self.model.get_length()))
+        self.patient_num_label.config(text='Patient ID: %s' % self.model.get_patient_id())
+
         #except:
         #    messagebox.showerror(title='Error', message='Unable to retrieve patient ID. Did you select the correct key?')
         #    return
@@ -127,18 +130,19 @@ class MainApplication(tk.Frame):
             pos_end = '{}+{}c'.format(tag_start, end)
             self.pttext.tag_add('highlighted', pos_start, pos_end)
 
- 
+        self.show_annotation()
 
     def show_annotation(self):
+
         self.ann_textbox.delete(0, tk.END)
-        view = self.current_note_row['data']
+        try: 
+            view = self.model.get_annotation()
+        except KeyError:
+            view = ""
         self.ann_textbox.insert(0, view)
         #self.data_model.get_annotation())
 
-    def on_save_annotation(self):
-        annotation = self.ann_textbox.get()
-        if len(annotation) > 0:
-            self.model.write_to_annotation(annotation)
+    #def on_save_annotation(self):
 
     def on_prev(self):
 
@@ -147,8 +151,10 @@ class MainApplication(tk.Frame):
         
         
     def on_next(self):
+        annotation = self.ann_textbox.get()
+        if len(annotation) > 0:
+            self.model.write_to_annotation(annotation)
         current_note_row = self.model.next()
-
         self.display_output_note(current_note_row)
  
 
@@ -384,8 +390,8 @@ class MainApplication(tk.Frame):
         self.ann_textbox = tk.Entry(entry_frame, font=textfont)
         self.ann_textbox.grid(column=0, row=1, sticky='e')
 
-        ann_button = tk.Button(entry_frame, text='Save Anno', width=8, command=self.on_save_annotation)
-        ann_button.grid(column=0, row=2, sticky='nw')
+        #ann_button = tk.Button(entry_frame, text='Save Anno', width=8, command=self.on_save_annotation)
+        #ann_button.grid(column=0, row=2, sticky='nw')
 
         output_button = tk.Button(entry_frame, text='To Csv', width=8, command=self.write_out_output_csv)
         output_button.grid(column=0, row=3, sticky='nw')
