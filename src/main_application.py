@@ -61,8 +61,11 @@ class MainApplication(tk.Frame):
             'r_encoding' : 'utf-8',
             'preserve_header' : True
         }
+        phrases = [p.strip() for p in self.phrases.split(",")]
 
-        self.model = Model(options_=opts,file_location_=file_loc)
+
+
+        self.model = Model(options_=opts,file_location_=file_loc,keywords_=phrases)
         #ReadRPDR(options=opts,file_location=file_loc)
 
         first_note = self.model.first()
@@ -73,20 +76,18 @@ class MainApplication(tk.Frame):
     def write_out_output_csv(self):
         #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
 
-        self.model.write_output("output.csv")
+        self.model.write_output("output.csv",self.checkvar)
 
     def write_out_output_stata(self):
         #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
 
-        self.model.write_output("output.dta")
+        self.model.write_output("output.dta",self.checkvar)
 
 
 
     def display_output_note(self,current_note_row):
 
         """ displays highlighting """ 
-
-
 
  
         #try:
@@ -102,7 +103,7 @@ class MainApplication(tk.Frame):
             #current_patient_id = current_note_row[self.patient_key]
         current_patient_id = current_note_row['metadata']['empi']
 
-        self.number_label.config(text='%d of %d' % (self.model.get_index()+ 1, self.model.get_length()))
+        self.number_label.config(text='%d of %d' % (self.model.get_index()+ 1, self.model.get_length(self.checkvar)))
         self.patient_num_label.config(text='Patient ID: %s' % self.model.get_patient_id())
 
         #except:
@@ -174,7 +175,8 @@ class MainApplication(tk.Frame):
             self.checkvar = False
         else:
             self.checkvar = True
-        self.refresh_model()
+        
+        #self.refresh_model()
 
     def hide_regex_options(self):
         self.note_key_entry_label.grid_remove()

@@ -3,7 +3,7 @@ import numpy as np
 import copy
 from src.rpdr import ReadRPDR
 import pandas as pd
-from src.helpers import _process_raw
+from src.helpers import _process_raw, _extract_phrase_from_notes
 
 
 # Maintains all of the data and handles the data manipulation for this application
@@ -40,13 +40,23 @@ class DataModel:
 		return ''
 
 class Model(object):
-    def __init__(self,options_,file_location_):
+    def __init__(self,options_,file_location_,keywords_):
         t = ReadRPDR(options=options_,file_location=file_location_).read_data()
         self.notes = []
         self.output_dicts = dict()
+        self.keywords = keywords_
         for i in t:
             new_note = copy.deepcopy(i)
             self.notes.append(new_note)
+
+    def filter_only_positives(self,keywords):
+        self.positive_onlys = list()
+        for i in self.notes:
+            words = i['data']
+            matches = _extract_phrase_from_notes(keywords,words)
+            if len(matches) > 0:
+                self.positive_onlys.append(i)
+
 
     def first(self):
         self.current_index = 0
@@ -98,8 +108,13 @@ class Model(object):
         note = self.notes[self.current_index]
         return(note['metadata'][patient_key])
 
-    def get_length(self):
-        return(len(self.notes))
+    def get_length(self,positive=False):
+        if positive == False:
+            return(len(self.notes))
+        elif positive == True:
+            self.filter_only_positives(self.keywords)
+            return(len(self.positive_onlys))
+            
 
     def get_index(self):
         return(self.current_index)
@@ -111,7 +126,7 @@ class Model(object):
 
         return(current_note)
         
-    def write_output(self,filename):
+    def write_output(self,filename,positive=False):
         final_output = list()
         
         for k,v in self.output_dicts.items():
