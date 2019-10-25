@@ -35,7 +35,7 @@ def _is_match(keywords,word):
         match_ = True
     return(match_)
 
-   
+
     
 
 def _create_sent_list(sentence):
@@ -126,13 +126,28 @@ def _extract_phrase_from_notes(keywords,whole_note):
             except StopIteration:
                 continue
 
-    #phrase_matches.finalize_phrase_matches()
     return phrase_matches
 
 
+class AnnotationLedger(object):
 
+    def __init__(self):
+        self.cache = []
 
+    def isEmpty(self):
+        return(self.cache==[])
 
+    def push(self,item):
+        self.cache.append(item)
+
+    def pop(self):
+        return(self.cache.pop())
+
+    def peek(self):
+        return(self.cache[len(self.cache)-1])
+
+    def size(self):
+        return(len(self.cache))
 
 
 def find_matches(keywords,whole_note):

@@ -178,7 +178,7 @@ class Read(UCPropMixin, object):
 
             # report progress
             self.progress_queue.put(progress)
-        raise read.ReaderError(message)
+        #raise read.ReaderError(message)
     
     def file_gen(self, file):
         """A generator based off of enumerate that checks for messages and reports progress periodically"""
@@ -330,6 +330,7 @@ class ReadTXT(Read):
             # if there's no error, report the progress
             self.prog_wait()
 
+
     def read_data(self):
         """Generator to yield lines in file"""
         # open the file using with statement to avoid having to close file
@@ -421,6 +422,7 @@ class ReadDelimTXT(ReadTXT):
             # count the number of records for the logs
             count = 0
             # set the start time and set state to Running
+
             self.progress['timer'] = time.time()
             self.progress['state'] = 'Running'
             # put the progress without waiting

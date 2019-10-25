@@ -3,9 +3,15 @@ from tkinter import font, filedialog, messagebox
 from src.model import DataModel
 from src.extract_values import run_regex
 from src.rpdr import ReadRPDR
-from src.helpers import find_matches,_extract_phrase_from_notes,_process_raw
+from src.helpers import find_matches,_extract_phrase_from_notes,_process_raw,AnnotationLedger
+from src.model import Model
 import pandas as pd
 import ast
+
+from queue import LifoQueue
+
+
+
 
 
 RPDR_NOTE_KEYWORD = 'NOTE'
@@ -40,53 +46,11 @@ class MainApplication(tk.Frame):
                 self.patient_key = self.patient_id_entry.get()
             self.refresh_viewer(output_fname)
 
-    def on_run_regex_old(self): 
-        if not self.data_model.input_fname:
-            # Warning
-            messagebox.showerror(title="Error", message="Please select an input file using the 'Select File' button.")
-            return
-
-        output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
-
-        # Retrieve phrases
-        if phrases == self.original_regex_text or len(phrases) == 0:
-            messagebox.showerror(title="Error", message="Please input comma-separated phrases to search for. ")
-            return
-
-        #TODO clean
-        rpdr_checkbox = self.rpdr_checkbox.var.get()
-        if rpdr_checkbox == 0:
-            note_keyword = self.note_key_entry.get()
-            patient_keyword = self.patient_id_entry.get()
-            if not note_keyword:
-                messagebox.showerror(title='Error', message='Please input the column name for notes.')
-                return
-            if not patient_keyword:
-                messagebox.showerror(title='Error', message='Please input the column name for patient IDs.')
-                return
-            try:
-                run_regex(self.data_model.input_fname, phrases, output_fname, False, note_keyword, patient_keyword)
-                self.note_key = note_keyword
-                self.patient_key = patient_keyword
-            except:
-                messagebox.showerror(title="Error", message="Something went wrong, did you select an appropriately formatted file to perform the Regex on?")
-                return
-        else:
-            try:
-                run_regex(self.data_model.input_fname, phrases, output_fname)
-                self.note_key = RPDR_NOTE_KEYWORD
-                self.patient_key = RPDR_PATIENT_KEYWORD
-            except:
-                messagebox.showerror(title="Error", message="Something went wrong, did you select an appropriately formatted RPDR file to perform the Regex on?")
-                return
-        self.refresh_viewer(output_fname)
 
     def on_run_regex(self):
         """ Passes clinician note file to Model """ 
 
         self.phrases = self.regex_text.get(1.0, 'end-1c').strip()
-
-
 
         # GETS FILE NAMe, passes global path to ReadRPDR
         file_loc = self.data_model.input_fname
@@ -99,76 +63,48 @@ class MainApplication(tk.Frame):
             'preserve_header' : True
         }
 
-        self.data_generator = ReadRPDR(options=opts,file_location=file_loc).read_data() # MODEL CALL
-        self.current_row_index  = 0
+        self.model = Model(options_=opts,file_location_=file_loc)
+        #ReadRPDR(options=opts,file_location=file_loc)
 
-        self.cache = []
-
-
-        self.display_output_note("next")#output_fname)
-
-
-
-
-
-    def display_output_note(self,direction):
-        """ displays highlighting """ 
-        #current_note_row = self.data_model.display_df.iloc[self.data_model.current_row_index]
-
-    
-    
-        #current_note_row  = self.all_notes[self.current_row_index]#next(self.data_generator)
-
-        if direction == "next":
-            #TODO am i skipping the first one
-            current_note_row = next(self.data_generator)
-
-            self.cache.append(current_note_row)
-
+        first_note = self.model.first()
         
-        else: #direction == "prev":
-
-            
-            current_note_row = self.cache[-1]
+        self.display_output_note(first_note)
 
 
 
+    def display_output_note(self,current_note_row):
 
-        try:
-            #current_note_text = current_note_row[self.note_key]
-            current_note_text= current_note_row['data']
-        except:
-            messagebox.showerror(title='Error', message='Unable to retrieve note text. Did you select the correct key?')
-            return
+        """ displays highlighting """ 
 
 
 
-        try:
+ 
+        #try:
+        current_note_text= current_note_row['data']
+        #except KeyError:
+        #    messagebox.showerror(title='Error', message='Unable to retrieve note text. Did you select the correct key?')
+        #    return
+
+
+
+        #try:
 
             #current_patient_id = current_note_row[self.patient_key]
-            current_patient_id = current_note_row['metadata']['empi']
+        current_patient_id = current_note_row['metadata']['empi']
 
-        except:
-            messagebox.showerror(title='Error', message='Unable to retrieve patient ID. Did you select the correct key?')
-            return
+        #except:
+        #    messagebox.showerror(title='Error', message='Unable to retrieve patient ID. Did you select the correct key?')
+        #    return
 
         tag_start = '1.0'
         # Add highlighting 
 
         
-        #cleaned_note,match_indices = find_matches(self.phrases,current_note_text)
         cleaned_note = _process_raw(current_note_text)
-        #phrases = list()
         phrases = [p.strip() for p in self.phrases.split(",")]
-        #",".join(self.phrases)
-        #phrases.append(self.phrases)
 
 
         match_indices = _extract_phrase_from_notes(phrases,cleaned_note)
-        print(cleaned_note)
-        print(self.phrases)
-        print(match_indices)
-
 
         self.pttext.config(state=tk.NORMAL)
         self.pttext.delete(1.0, tk.END)
@@ -181,12 +117,7 @@ class MainApplication(tk.Frame):
             pos_end = '{}+{}c'.format(tag_start, end)
             self.pttext.tag_add('highlighted', pos_start, pos_end)
 
-
-        #''.join(current_note_text))
-
-
-        #self.show_annotation()
-        
+ 
 
     def show_annotation(self):
         self.ann_textbox.delete(0, tk.END)
@@ -200,18 +131,16 @@ class MainApplication(tk.Frame):
             self.data_model.write_to_annotation(annotation)
 
     def on_prev(self):
-        #self.on_save_annotation()
-        #if self.current_row_index > 0:
-        #    self.current_row_index -= 1
 
-        self.display_output_note("prev")
+        current_note_row = self.model.prev()
+        self.display_output_note(current_note_row)
+        
         
     def on_next(self):
-        #self.on_save_annotation()
-        #if self.current_row_index  < self.num_notes-1:
-        #    self.current_row_index += 1
-    
-        self.display_output_note("next")
+        current_note_row = self.model.next()
+
+        self.display_output_note(current_note_row)
+ 
 
     ## GUI helper methods
     def clear_textbox(self, event, widget, original_text):

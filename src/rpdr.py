@@ -48,6 +48,13 @@ class ReadRPDR(ReadDelimTXT):
         # this bool is to make sure the file is valid
         valid = False
         # open the file to validate file and get fields
+        self.cached_index  = 0
+        self.current_index = 0
+        self.cache = []
+
+
+
+
         try:
             with open(self.info['metadata']['filepath'], 'r', encoding=self.options['r_encoding']) as file:
                 # read line-by-line, the first two lines with text is all we need
@@ -104,7 +111,6 @@ class ReadRPDR(ReadDelimTXT):
             # if it can't find it, put a warning
             if self.text_field is None:
                 self.put_warning(self.info['metadata']['filename'], 'Could not determine file\'s text field.')
-    #def _extract_phrase_from_notes(self,
 
 
 
@@ -112,6 +118,7 @@ class ReadRPDR(ReadDelimTXT):
         """Generator to yield lines from each document in file"""
         
         #self.put_error("Test", "Test Error")
+        all_notes = []
         
         
         # get the super generator
@@ -123,13 +130,14 @@ class ReadRPDR(ReadDelimTXT):
         # use the helper method to process it
         self.read_helper(first_doc)
         # if it's not empty, yield it
-        if self.info['data']:
-            yield self.info
+        #if self.info['data']:
+        #    yield self.info
         # now go through the rest of the records
         for lines in super_generator:
             self.read_helper(lines)
             # yield if there is something to yield
             if self.info['data']:
+                #all_notes.append(self.info)
                 yield self.info
 
     def read_helper(self, lines):
