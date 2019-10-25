@@ -20,6 +20,8 @@ def test_IO():
         new_note = copy.deepcopy(i)
         all_notes.append(new_note)
 
+    test = all_notes[1]
+
     #t = ReadRPDR().find_matches('
     #`t = ReadRPDR(options=opts,file_location='/home/brian-tp/Downloads/ ARE1__080519005036102066_MGH_Vis.txt').read_data()
 

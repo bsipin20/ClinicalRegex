@@ -8,7 +8,6 @@ from src.model import Model
 import pandas as pd
 import ast
 
-from queue import LifoQueue
 
 
 
@@ -36,7 +35,7 @@ class MainApplication(tk.Frame):
             self.file_text.config(text=self.data_model.input_fname.split('/')[-1])
 
     def on_select_output_file(self):
-        output_fname = filedialog.askopenfilename(title="Select Output File")
+        self.output_fname = filedialog.askopenfilename(title="Select Output File")
 
         if output_fname:
             # Change note-key
@@ -55,7 +54,7 @@ class MainApplication(tk.Frame):
         # GETS FILE NAMe, passes global path to ReadRPDR
         file_loc = self.data_model.input_fname
  
-        output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
+        #self.output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
 
 
         opts = {
@@ -69,6 +68,17 @@ class MainApplication(tk.Frame):
         first_note = self.model.first()
         
         self.display_output_note(first_note)
+
+
+    def write_out_output_csv(self):
+        #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
+
+        self.model.write_output("output.csv")
+
+    def write_out_output_stata(self):
+        #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
+
+        self.model.write_output("output.dta")
 
 
 
@@ -128,7 +138,7 @@ class MainApplication(tk.Frame):
     def on_save_annotation(self):
         annotation = self.ann_textbox.get()
         if len(annotation) > 0:
-            self.data_model.write_to_annotation(annotation)
+            self.model.write_to_annotation(annotation)
 
     def on_prev(self):
 
@@ -312,7 +322,7 @@ class MainApplication(tk.Frame):
         regex_button.grid(column=0, row=1, sticky='sw')
 
         self.regex_label = tk.Entry(right_regex_frame, font=labelfont)
-        self.regex_label.insert(0, 'output.csv')
+        self.regex_label.insert(0, 'output.dta')
         self.regex_label.grid(column=1, row=1, sticky='se')
 
         # Right regex options container
@@ -374,5 +384,16 @@ class MainApplication(tk.Frame):
         self.ann_textbox = tk.Entry(entry_frame, font=textfont)
         self.ann_textbox.grid(column=0, row=1, sticky='e')
 
-        ann_button = tk.Button(entry_frame, text='Save', width=8, command=self.on_save_annotation)
+        ann_button = tk.Button(entry_frame, text='Save Anno', width=8, command=self.on_save_annotation)
         ann_button.grid(column=0, row=2, sticky='nw')
+
+        output_button = tk.Button(entry_frame, text='To Csv', width=8, command=self.write_out_output_csv)
+        output_button.grid(column=0, row=3, sticky='nw')
+
+        output_button = tk.Button(entry_frame, text='To Stata', width=8, command=self.write_out_output_stata)
+        output_button.grid(column=0, row=4, sticky='nw')
+
+
+
+
+

@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import copy
 from src.rpdr import ReadRPDR
+import pandas as pd
+from src.helpers import _process_raw
 
 
 # Maintains all of the data and handles the data manipulation for this application
@@ -41,6 +43,7 @@ class Model(object):
     def __init__(self,options_,file_location_):
         t = ReadRPDR(options=options_,file_location=file_location_).read_data()
         self.notes = []
+        self.output_dicts = list()
         for i in t:
             new_note = copy.deepcopy(i)
             self.notes.append(new_note)
@@ -62,10 +65,41 @@ class Model(object):
             return(current_note)
 
 
+    def write_to_annotation(self,annotation):
+        note = self.notes[self.current_index]
+        words = note['data']
+        clean_words = _process_raw(words)
+
+
+        output_dict = {
+            "empi"  : note['metadata']['empi'],
+            "mrn" : note['metadata']['mrn'],
+            "mrn_type" : note['metadata']['mrn_type'],
+            "report_description" : note['metadata']['report_description'],
+            "report_status" : note['metadata']['report_status'],
+            "report_type" : note['metadata']['report_type'],
+            "text" : " ".join(clean_words[1:]),
+            "annotation" : annotation
+        }
+        
+        
+        self.output_dicts.append(output_dict)
+
+
+
     def prev(self):
         self.current_index -=1
         current_note = self.notes[self.current_index]
 
         return(current_note)
+        
+    def write_output(self,filename):
+        df = pd.DataFrame(self.output_dicts)
+        file_ending = filename.split(".")[1]
+        print(file_ending)
+        if file_ending == "csv":
+            df.to_csv(filename)
+        elif file_ending == "dta":
+            df.to_stata(filename,version=117)
         
    
