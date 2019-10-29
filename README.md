@@ -1,14 +1,6 @@
 # ClinicalRegex
 
-
-## Download Git
-git clone latest code from master branch at https://github.com/bsipin20/ClinicalRegex.git
-
 ## Install dependencies
-Open terminal on mac (press command + space and type in terminal and hit enter)
-Type following commands sequentially 
-
-$ cd ~/Desktop/DukeClinicalRegexTest-master/
 
 $ sudo easy\_install pip
 
