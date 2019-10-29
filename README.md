@@ -2,12 +2,17 @@
 
 ## Install dependencies
 
-$ sudo easy\_install pip
-
-$ pip3 install -r requirements.txt
+```
+sudo easy_install pip
+```
+```
+pip3 install -r requirements.txt
+```
 
 ## Start Program
-$ python3 src/main.py
+```
+python3 src/main.py
+```
 
 ## Annotation pipeline
 ![img](ClinicalRegex.png)
