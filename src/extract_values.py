@@ -105,7 +105,7 @@ class ClinicianNotes(object):
                 r'(\s%s\s)',
                 r'(^%s\s)',
                 r'(\s%s$)',
-                '(^%s$)',
+                r'(%s)',
                 r'(\s%s(?=\W))',
                 r'(^%s(?=\W))'],
             self.PHRASE_TYPE_NUM: [r'(?:%s)\s*(?:of|is|was|were|are|\:)?[:]*[\s]*([0-9]+\.?[0-9]*)'],

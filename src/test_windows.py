@@ -1,4 +1,4 @@
-#def run_regex(
+# def run_regex(
 #        input_filename,
 #        phrases,
 #        output_filename='output.csv',
@@ -11,8 +11,7 @@
 #        report_type=None,
 #        ignore_punctuation=False):
 
-from .extract_values import run_regex 
+from .extract_values import run_regex
 
 
-run_regex('test_deidentified_rpdr_format.txt',"Patient")
-
+run_regex('test_deidentified_rpdr_format.txt', "Patient")
