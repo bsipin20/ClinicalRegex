@@ -9,10 +9,6 @@ import pandas as pd
 import ast
 
 
-
-
-
-
 RPDR_NOTE_KEYWORD = 'NOTE'
 RPDR_PATIENT_KEYWORD = 'EMPI'
 
@@ -66,10 +62,9 @@ class MainApplication(tk.Frame):
 
 
         self.model = Model(options_=opts,file_location_=file_loc,keywords_=phrases)
-        #ReadRPDR(options=opts,file_location=file_loc)
 
         first_note = self.model.first()
-        
+    
         self.display_output_note(first_note)
 
 
@@ -89,41 +84,23 @@ class MainApplication(tk.Frame):
 
         """ displays highlighting """ 
 
- 
-        #try:
         current_note_text= current_note_row['data']
-        #except KeyError:
-        #    messagebox.showerror(title='Error', message='Unable to retrieve note text. Did you select the correct key?')
-        #    return
-
-
-
-        #try:
-
-            #current_patient_id = current_note_row[self.patient_key]
         current_patient_id = current_note_row['metadata']['empi']
+        match_indices = current_note_row['matches']
 
         self.number_label.config(text='%d of %d' % (self.model.get_index()+ 1, self.model.get_length(self.checkvar)))
         self.patient_num_label.config(text='Patient ID: %s' % self.model.get_patient_id())
 
-        #except:
-        #    messagebox.showerror(title='Error', message='Unable to retrieve patient ID. Did you select the correct key?')
-        #    return
 
         tag_start = '1.0'
+
         # Add highlighting 
-
-        
-        cleaned_note = _process_raw(current_note_text)
-        phrases = [p.strip() for p in self.phrases.split(",")]
-
-
-        match_indices = _extract_phrase_from_notes(phrases,cleaned_note)
 
         self.pttext.config(state=tk.NORMAL)
         self.pttext.delete(1.0, tk.END)
-        self.pttext.insert(tk.END, " ".join(cleaned_note))
+        self.pttext.insert(tk.END, " ".join(current_note_text))
         self.pttext.config(state=tk.DISABLED)
+        print(match_indices)
 
 
         for start, end in match_indices:
@@ -141,7 +118,6 @@ class MainApplication(tk.Frame):
         except KeyError:
             view = ""
         self.ann_textbox.insert(0, view)
-        #self.data_model.get_annotation())
 
     #def on_save_annotation(self):
 
@@ -154,8 +130,10 @@ class MainApplication(tk.Frame):
     def on_next(self):
         annotation = self.ann_textbox.get()
         if len(annotation) > 0:
+
             self.model.write_to_annotation(annotation)
-        current_note_row = self.model.next()
+
+        current_note_row= self.model.next()
         self.display_output_note(current_note_row)
  
 
@@ -176,7 +154,7 @@ class MainApplication(tk.Frame):
         else:
             self.checkvar = True
         
-        #self.refresh_model()
+        self.model.refresh(self.checkvar)
 
     def hide_regex_options(self):
         self.note_key_entry_label.grid_remove()

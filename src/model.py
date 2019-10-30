@@ -3,7 +3,7 @@ import numpy as np
 import copy
 from src.rpdr import ReadRPDR
 import pandas as pd
-from src.helpers import _process_raw, _extract_phrase_from_notes
+from src.helpers import _process_raw, _extract_phrase_from_notes,_clean_note_phrase
 
 
 # Maintains all of the data and handles the data manipulation for this application
@@ -42,24 +42,58 @@ class DataModel:
 class Model(object):
     def __init__(self,options_,file_location_,keywords_):
         t = ReadRPDR(options=options_,file_location=file_location_).read_data()
+
+        self.process_all_notes(t,keywords_)
+
+
+    def process_all_notes(self,t,keywords_):
         self.notes = []
+        self.current_index = 0
+
+
         self.output_dicts = dict()
         self.keywords = keywords_
-        for i in t:
+
+        numbered  = enumerate(t)
+
+        for note,i in numbered:
             new_note = copy.deepcopy(i)
+            matches = self.find_matches(i)
+            new_note['matches'] = matches
+            new_note['data'] = _process_raw(i['data'])
             self.notes.append(new_note)
 
-    def filter_only_positives(self,keywords):
-        self.positive_onlys = list()
-        for i in self.notes:
-            words = i['data']
-            matches = _extract_phrase_from_notes(keywords,words)
-            if len(matches) > 0:
-                self.positive_onlys.append(i)
 
+    def filter_only_positives(self):
+        self.original = copy.deepcopy(self.notes)
+        self.positives = list()
+
+        for i in self.notes:
+            if len(i['matches']) > 0:
+                self.positives.append(i)
+
+        self.notes = copy.deepcopy(self.positives)
+
+    def find_matches(self,current_note,index=None):
+        #current_note_text = ""
+        #if index:
+        #    current_note_text = self.notes[index]
+        #else:
+        #    current_note_text = self.notes[self.current_index]
+        cleaned_note = _process_raw(current_note['data'])
+        phrases = self.keywords
+
+        #= [p.strip() for p in self.keywords.split(",")]
+        match_indices = _extract_phrase_from_notes(phrases,cleaned_note)
+        return(match_indices)
+
+    def refresh(self,checkvar):
+        if checkvar:
+            self.filter_only_positives()
+        else:
+            self.notes = self.original # backup
 
     def first(self):
-        self.current_index = 0
         self.cached_index = 0
 
         return(self.notes[self.current_index])
@@ -74,6 +108,13 @@ class Model(object):
             current_note = self.notes[self.current_index]
             return(current_note)
 
+    def prev(self):
+        self.current_index -=1
+        current_note = self.notes[self.current_index]
+
+        return(current_note)
+ 
+
     def get_annotation(self):
         note = self.output_dicts[self.current_index]
         annotation = ""
@@ -83,12 +124,10 @@ class Model(object):
 
 
 
-
     def write_to_annotation(self,annotation):
         note = self.notes[self.current_index]
         words = note['data']
         clean_words = _process_raw(words)
-
 
         output_dict = {
             "empi"  : note['metadata']['empi'],
@@ -98,7 +137,8 @@ class Model(object):
             "report_status" : note['metadata']['report_status'],
             "report_type" : note['metadata']['report_type'],
             "text" : " ".join(clean_words[1:]),
-            "annotation" : annotation
+            "annotation" : annotation,
+            "matches" : note['matches']
         }
         
         self.output_dicts[self.current_index] = output_dict 
@@ -109,23 +149,13 @@ class Model(object):
         return(note['metadata'][patient_key])
 
     def get_length(self,positive=False):
-        if positive == False:
-            return(len(self.notes))
-        elif positive == True:
-            self.filter_only_positives(self.keywords)
-            return(len(self.positive_onlys))
-            
+        return(len(self.notes))
 
     def get_index(self):
         return(self.current_index)
 
 
-    def prev(self):
-        self.current_index -=1
-        current_note = self.notes[self.current_index]
-
-        return(current_note)
-        
+       
     def write_output(self,filename,positive=False):
         final_output = list()
         
