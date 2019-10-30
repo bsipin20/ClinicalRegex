@@ -18,7 +18,7 @@ class DataModel:
         if self.output_df is None or self.current_row_index is None:
             return
 
-        self.output_df.to_csv(self.output_fname)
+        self.output_df.to_csv(self.output_fname, index=False)
 
     def get_annotation(self):
         if self.annotation_key in self.output_df:
