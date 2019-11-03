@@ -44,7 +44,7 @@ class Model(object):
         """ initializes RPDR generator """ 
         t = ReadRPDR(options=options_,file_location=file_location_).read_data()
         self.all_notes = self.process_all_notes(t,keywords_)
-        self.output_dicts(dict())
+        self.output_dicts = dict()
 
 
     @property

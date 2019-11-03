@@ -381,5 +381,3 @@ class MainApplication(tk.Frame):
 
 
 
-
-
