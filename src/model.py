@@ -41,17 +41,27 @@ class DataModel:
 
 class Model(object):
     def __init__(self,options_,file_location_,keywords_):
+        """ initializes RPDR generator """ 
         t = ReadRPDR(options=options_,file_location=file_location_).read_data()
+        self.all_notes = self.process_all_notes(t,keywords_)
+        self.output_dicts(dict())
 
-        self.process_all_notes(t,keywords_)
+
+    @property
+    def output_dicts(self):
+        return self._output_dicts
+
+    @output_dicts.setter
+    def output_dicts(self,a):
+        self._output_dicts = a
+
 
 
     def process_all_notes(self,t,keywords_):
-        self.notes = []
+        """ creates own instance of new list and adds generator to  all_notes """ 
+
+        notes = []
         self.current_index = 0
-
-
-        self.output_dicts = dict()
         self.keywords = keywords_
 
         numbered  = enumerate(t)
@@ -61,7 +71,8 @@ class Model(object):
             matches = self.find_matches(i)
             new_note['matches'] = matches
             new_note['data'] = _process_raw(i['data'])
-            self.notes.append(new_note)
+            notes.append(new_note)
+        return(notes)
 
 
     def filter_only_positives(self):
@@ -75,15 +86,8 @@ class Model(object):
         self.notes = copy.deepcopy(self.positives)
 
     def find_matches(self,current_note,index=None):
-        #current_note_text = ""
-        #if index:
-        #    current_note_text = self.notes[index]
-        #else:
-        #    current_note_text = self.notes[self.current_index]
         cleaned_note = _process_raw(current_note['data'])
         phrases = self.keywords
-
-        #= [p.strip() for p in self.keywords.split(",")]
         match_indices = _extract_phrase_from_notes(phrases,cleaned_note)
         return(match_indices)
 
@@ -116,7 +120,7 @@ class Model(object):
  
 
     def get_annotation(self):
-        note = self.output_dicts[self.current_index]
+        note = self._output_dicts[self.current_index]
         annotation = ""
         if "annotation" in note:
             annotation = note['annotation']
@@ -141,7 +145,7 @@ class Model(object):
             "matches" : note['matches']
         }
         
-        self.output_dicts[self.current_index] = output_dict 
+        self._output_dicts[self.current_index] = output_dict 
 
     def get_patient_id(self):
         patient_key = 'empi'
@@ -154,16 +158,23 @@ class Model(object):
     def get_index(self):
         return(self.current_index)
 
-
-       
-    def write_output(self,filename,positive=False):
+    def prepare_output(self,positive=False):
         final_output = list()
-        
-        for k,v in self.output_dicts.items():
+
+        for k,v in self._output_dicts.items():
             final_output.append(v)
         
         df = pd.DataFrame(final_output)
         file_ending = filename.split(".")[1]
+        return(df)
+
+
+
+
+       
+    def write_output(self,filename,positive=False):
+        """ no test function for this yet"""
+        df = self.prepare_output()
         if file_ending == "csv":
             df.to_csv(filename)
         elif file_ending == "dta":
