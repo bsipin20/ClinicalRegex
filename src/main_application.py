@@ -6,6 +6,7 @@ from src.rpdr import ReadRPDR
 from src.helpers import find_matches,_extract_phrase_from_notes,_process_raw,AnnotationLedger
 from src.model import Model
 import pandas as pd
+import os
 import ast
 
 
@@ -49,6 +50,7 @@ class MainApplication(tk.Frame):
 
         # GETS FILE NAMe, passes global path to ReadRPDR
         file_loc = self.data_model.input_fname
+        self.dirname = os.path.dirname(file_loc)
  
         #self.output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
 
@@ -78,13 +80,12 @@ class MainApplication(tk.Frame):
 
     def write_out_output_csv(self):
         #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
+        filename = self.regex_label.get()
+        filename = self.dirname + "/" + filename
 
-        self.model.write_output("output.csv",self.checkvar)
+        self.model.write_output(filename)
 
-    def write_out_output_stata(self):
-        #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
-
-        self.model.write_output("output.dta",self.checkvar)
+        #self.model.write_output("output.dta",self.checkvar)
 
     def display_output_note(self,current_note_row,index):
 
@@ -325,7 +326,7 @@ class MainApplication(tk.Frame):
         regex_button.grid(column=0, row=1, sticky='sw')
 
         self.regex_label = tk.Entry(right_regex_frame, font=labelfont)
-        self.regex_label.insert(0, 'output.dta')
+        self.regex_label.insert(0, 'output.csv')
         self.regex_label.grid(column=1, row=1, sticky='se')
 
         # Right regex options container
@@ -390,11 +391,11 @@ class MainApplication(tk.Frame):
         #ann_button = tk.Button(entry_frame, text='Save Anno', width=8, command=self.on_save_annotation)
         #ann_button.grid(column=0, row=2, sticky='nw')
 
-        output_button = tk.Button(entry_frame, text='To Csv', width=8, command=self.write_out_output_csv)
+        output_button = tk.Button(entry_frame, text='Output File', width=8, command=self.write_out_output_csv)
         output_button.grid(column=0, row=3, sticky='nw')
 
-        output_button = tk.Button(entry_frame, text='To Stata', width=8, command=self.write_out_output_stata)
-        output_button.grid(column=0, row=4, sticky='nw')
+        #output_button = tk.Button(entry_frame, text='To Stata', width=8, command=self.write_out_output_stata)
+        #output_button.grid(column=0, row=4, sticky='nw')
 
 
 
