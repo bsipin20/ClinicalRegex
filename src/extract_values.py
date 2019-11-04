@@ -191,9 +191,62 @@ class ClinicianNotes(object):
         phrase_matches.finalize_phrase_matches()
         return phrase_matches
 
+<<<<<<< HEAD
 
+
+
+
+    def _filter_rpdr_notes_by_column_val(self,
+                                          rpdr_notes,
+                                          required_report_description,
+                                          required_report_type):
+        """Filter the rpdr notes by column values.
+
+        Input:
+        rpdr_notes: the list of RPDR note objects.
+        required_report_description: a value for report description such as "ECG"
+        required_report_type: a value for the report type such as "CAR"
+
+        Return rpdr_notes with all values filtered out whose keys differ
+        from either `required_report_type` or `required_report_description` if
+        those values are not None.
+        """
+        filtered_rpdr_notes = []
+        for rpdr_note in rpdr_notes:
+            if (required_report_description is not None and
+                    rpdr_note.report_description != required_report_description):
+                continue
+            if (required_report_type is not None and
+                    rpdr_note.report_type != required_report_type):
+                continue
+            filtered_rpdr_notes.append(rpdr_note)
+        return filtered_rpdr_notes
+
+
+
+    def clean_df(self,df, text_columns, needs_decode=True):
+        # ALL NOTES
+        # TODO
+        # SPECIFY DTYPES????? MAYBE IDK HOW
+
+        for label in text_columns:
+            if label in df:
+                df[label] = df[label].map(lambda x: clean_phrase(x, needs_decode))
+        new_df = pd.DataFrame(columns=df.columns)
+        for index, row in df.iterrows():
+            new_df = new_df.append(row)
+        return new_df
+
+
+
+    def _write_csv_output(self,note_phrase_matches, note_key, output_fname):
+        """Write one CSV row for each phrase_match where the row contains all of
+        the RPDR note keys along with the extracted numerical value at the end of
+        the row."""
+
+=======
     def _findMaches(self, note_phrase_matches, note_key):
-
+>>>>>>> 22669b543280746f650297b93b29db203e2224cc
         dict_list = []
         for note_phrase_match in note_phrase_matches:
 
@@ -210,8 +263,32 @@ class ClinicianNotes(object):
                 match_end = match_start + len(matched_text)
                 matches.append((match_start, match_end))
 
-        return matches
+<<<<<<< HEAD
+            extracted_value = 0
 
+            if len(note_phrase_match.phrase_matches) > 0:
+                extracted_value = note_phrase_match.phrase_matches[0].extracted_value
+
+            note_phrase_match.note_dict['MATCHES'] = matches
+            note_phrase_match.note_dict['EXTRACTED_VALUE'] = extracted_value
+            dict_list.append(note_phrase_match.note_dict)
+
+        df = pd.DataFrame(dict_list)
+        df['MATCHES'] = df['MATCHES'].astype('object')
+        df.index = np.arange(0, df.shape[0])
+        df = self.clean_df(df, [RPDR_NOTE_KEYWORD], False)
+
+        #df.to_csv('diff.csv',encoding="utf-8")
+
+        with open(output_fname, mode='w', newline='\n') as f:
+            df.to_csv(f, sep=",", float_format='%.2f',
+                              index=True)
+
+        #writer = pd.ExcelWriter(output_fname[:-4] + '.xlsx')
+        #df.to_excel(writer, 'Sheet1')
+=======
+        return matches
+>>>>>>> 22669b543280746f650297b93b29db203e2224cc
 
 
 PHRASE_TYPE_WORD = 0

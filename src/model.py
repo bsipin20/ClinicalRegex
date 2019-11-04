@@ -24,6 +24,7 @@ class DataModel:
             return
         self.save_df.to_csv(self.output_fname, index=False)
 
+<<<<<<< HEAD
 		if self.annotation_key not in self.output_df:
 			self.output_df[self.annotation_key] = np.nan
 			self.output_df[self.annotation_key] = np.nan
@@ -183,7 +184,8 @@ class Model(object):
         elif file_ending == "dta":
             df.to_stata(filename,version=117)
         
-
+   
+=======
     def get_annotation(self):
         if self.annotation_key in self.output_df:
             current_row_index = self.display_df.index[self.current_row_index]
@@ -194,4 +196,4 @@ class Model(object):
                 except BaseException:
                     return val
         return ''
-
+>>>>>>> 22669b543280746f650297b93b29db203e2224cc
