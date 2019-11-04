@@ -6,21 +6,25 @@ import pandas as pd
 from src.helpers import _process_raw, _extract_phrase_from_notes,_clean_note_phrase
 
 
-# Maintains all of the data and handles the data manipulation for this application
+# Maintains all of the data and handles the data manipulation for this
+# application
 class DataModel:
-	def __init__(self):
-		self.input_fname = None
-		self.output_fname = None
-		self.output_df = None
-		self.display_df = None
-		self.current_row_index = None
-		self.num_notes = None
-		self.annotation_key = 'ANNOTATION'
+    def __init__(self):
+        self.input_fname = None
+        self.output_fname = None
+        self.output_df = None
+        self.display_df = None
+        self.save_df = None
+        self.current_row_index = None
+        self.num_notes = None
+        self.annotation_key = 'ANNOTATION'
 
-	def write_to_annotation(self, annotation):
-		if self.output_df is None or self.current_row_index is None:
-			return
+    def write_to_annotation(self):
+        if self.save_df is None or self.current_row_index is None:
+            return
+        self.save_df.to_csv(self.output_fname, index=False)
 
+<<<<<<< HEAD
 		if self.annotation_key not in self.output_df:
 			self.output_df[self.annotation_key] = np.nan
 			self.output_df[self.annotation_key] = np.nan
@@ -181,3 +185,15 @@ class Model(object):
             df.to_stata(filename,version=117)
         
    
+=======
+    def get_annotation(self):
+        if self.annotation_key in self.output_df:
+            current_row_index = self.display_df.index[self.current_row_index]
+            val = self.output_df.at[current_row_index, self.annotation_key]
+            if val is not None and not pd.isnull(val):
+                try:
+                    return int(float(val))
+                except BaseException:
+                    return val
+        return ''
+>>>>>>> 22669b543280746f650297b93b29db203e2224cc
