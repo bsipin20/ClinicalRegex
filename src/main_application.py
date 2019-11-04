@@ -24,6 +24,10 @@ class MainApplication(tk.Frame):
         self.load_annotation = False
         self.data_model = DataModel()
         self.checkvar = False
+        chkValue = tk.BooleanVar()
+        chkValue.set(False)
+        self.positive_checkbox.config(var=chkValue)
+
         file = filedialog.askopenfilename(title="Select File")
         if file:
             self.data_model.input_fname = file
@@ -160,7 +164,7 @@ class MainApplication(tk.Frame):
         self.data_model.output_df = pd.read_csv(
             self.data_model.input_fname)
         columns = self.data_model.output_df.columns.values.tolist()
-        if len(columns) not in [5, 8, 11] or 'L1_' not in columns[2]:
+        if len(columns) not in [6, 10, 14] or 'L1_' not in columns[2]:
             messagebox.showerror(
                 title="Error",
                 message="Something went wrong, did you select an appropriately output CSV file?")
@@ -169,21 +173,21 @@ class MainApplication(tk.Frame):
         self.label_name[1] = columns[2][3:]
         self.phrases[2] = self.phrases[3] = self.original_regex_text
 
-        if len(columns) == 5:
+        if len(columns) == 6:
             self.phrases[1] = columns[-1][3:]
-        elif len(columns) == 8:
-            self.label_name[2] = columns[4][3:]
+        elif len(columns) == 10:
+            self.label_name[2] = columns[5][3:]
             self.phrases[1] = columns[-2][3:]
             self.phrases[2] = columns[-1][3:]
-        elif len(columns) == 11:
-            self.label_name[2] = columns[4][3:]
-            self.label_name[3] = columns[6][3:]
+        elif len(columns) == 14:
+            self.label_name[2] = columns[5][3:]
+            self.label_name[3] = columns[8][3:]
             self.phrases[1] = columns[-3][3:]
             self.phrases[2] = columns[-2][3:]
             self.phrases[3] = columns[-1][3:]
 
         for i in range(1, 4):
-            if len(columns) >= (2 + i * 3):
+            if len(columns) >= (2 + i * 4):
                 self.label_text[i].delete(1.0, tk.END)
                 self.label_text[i].insert(tk.END, self.label_name[i])
                 self.regex_text[i].delete(1.0, tk.END)
@@ -218,44 +222,47 @@ class MainApplication(tk.Frame):
             return str(cleaned.strip())
 
         # run regex
-        if 1 > 0:
-            try:
+        try:
+            if not self.load_annotation:
                 self.data_model.output_df = pd.read_csv(
                     self.data_model.input_fname, usecols=[
                         self.patient_key, self.note_key])
                 self.data_model.output_df[self.note_key] = self.data_model.output_df[self.note_key].apply(
                     lambda x: clean_phrase(x))
-                # Display only positive hits
-                if self.checkvar:
-                    phrases = []
-                    for i in range(1, 4):
-                        if self.phrases[i] != self.original_regex_text and len(
-                                self.phrases[i]) > 0:
-                            phrases.extend(self.phrases[i].split(','))
+            else:
+                self.data_model.output_df = pd.read_csv(
+                    self.data_model.input_fname)
+            # Display only positive hits
+            if self.checkvar:
+                phrases = []
+                for i in range(1, 4):
+                    if self.phrases[i] != self.original_regex_text and len(
+                            self.phrases[i]) > 0:
+                        phrases.extend(self.phrases[i].split(','))
+                        if not self.load_annotation:
                             self.data_model.output_df['L%d_' %
                                                       i + self.label_name[i]] = 0
                             self.data_model.output_df['L%d_' %
                                                       i + self.label_name[i] + '_span'] = None
                             self.data_model.output_df['L%d_' %
                                                       i + self.label_name[i] + '_text'] = None
-                    self.data_model.output_df['regex'] = self.data_model.output_df[self.note_key].apply(
-                        lambda x: 1 if any(re.search(p, x.lower()) for p in phrases) else 0)
-                    self.data_model.nokeyword_df = self.data_model.output_df[self.data_model.output_df['regex'] == 0].reset_index(
-                        drop=True)
-                    self.data_model.output_df = self.data_model.output_df[self.data_model.output_df['regex'] == 1].reset_index(
-                        drop=True)
-                    self.data_model.output_df = self.data_model.output_df.drop(columns=[
-                        'regex'])
-                    self.data_model.nokeyword_df = self.data_model.nokeyword_df.drop(columns=[
-                        'regex'])
-                else:
-                    self.data_model.nokeyword_df = []
-            except BaseException:
-                messagebox.showerror(
-                    title="Error",
-                    message="Something went wrong, did you select an appropriately columns?")
-                return
-
+                self.data_model.output_df['regex'] = self.data_model.output_df[self.note_key].apply(
+                    lambda x: 1 if any(re.search(p, x.lower()) for p in phrases) else 0)
+                self.data_model.nokeyword_df = self.data_model.output_df[self.data_model.output_df['regex'] == 0].reset_index(
+                    drop=True)
+                self.data_model.output_df = self.data_model.output_df[self.data_model.output_df['regex'] == 1].reset_index(
+                    drop=True)
+                self.data_model.output_df = self.data_model.output_df.drop(columns=[
+                    'regex'])
+                self.data_model.nokeyword_df = self.data_model.nokeyword_df.drop(columns=[
+                    'regex'])
+            else:
+                self.data_model.nokeyword_df = []
+        except BaseException:
+            messagebox.showerror(
+                title="Error",
+                message="Something went wrong, did you select an appropriately columns?")
+            return
         self.data_model.output_fname = output_fname
         self.refresh_model()
 
@@ -265,7 +272,7 @@ class MainApplication(tk.Frame):
         else:
             try:
                 self.data_model.current_row_index = self.data_model.output_df.index[
-                    self.data_model.output_df['L1_' + self.label_name[1]].isna()].tolist()[0]
+                    self.data_model.output_df['L1_' + self.label_name[1]] == 0].tolist()[0]
             except BaseException:
                 self.data_model.current_row_index = 0
 
@@ -312,8 +319,15 @@ class MainApplication(tk.Frame):
         for i in range(1, 4):
             if self.phrases[i] != self.original_regex_text and len(
                     self.phrases[i]) > 0:
-                self.find_matches(self.phrases[i], "keyword_%d" % i,
-                                  "L%d_" % i + self.label_name[i], input_df)
+                self.find_matches(
+                    self.phrases[i],
+                    "keyword_%d" %
+                    i,
+                    "L%d_" %
+                    i +
+                    self.label_name[i] +
+                    '_span',
+                    input_df)
 
         self.pttext.tag_raise("sel")
         self.length, l = {}, 0
@@ -410,21 +424,26 @@ class MainApplication(tk.Frame):
         self.modify_annotation('delete')
 
     def modify_annotation(self, action):
-        if self.label == 1:
-            keyword = "keyword_1"
-        elif self.label == 2:
-            keyword = "keyword_2"
+        if self.pttext.tag_ranges(tk.SEL):
+            if self.label == 1:
+                keyword = "keyword_1"
+            elif self.label == 2:
+                keyword = "keyword_2"
+            else:
+                keyword = "keyword_3"
+            s0 = self.pttext.index("sel.first").split('.')
+            s1 = self.pttext.index("sel.last").split('.')
+            pos_start = '{}.{}'.format(*s0)
+            pos_end = '{}.{}'.format(*s1)
+            self.pttext.tag_remove(tk.SEL, "1.0", tk.END)
+            if action == 'add':
+                self.pttext.tag_add(keyword, pos_start, pos_end)
+            else:
+                self.pttext.tag_remove(keyword, pos_start, pos_end)
         else:
-            keyword = "keyword_3"
-        s0 = self.pttext.index("sel.first").split('.')
-        s1 = self.pttext.index("sel.last").split('.')
-        pos_start = '{}.{}'.format(*s0)
-        pos_end = '{}.{}'.format(*s1)
-        self.pttext.tag_remove(tk.SEL, "1.0", tk.END)
-        if action == 'add':
-            self.pttext.tag_add(keyword, pos_start, pos_end)
-        else:
-            self.pttext.tag_remove(keyword, pos_start, pos_end)
+            messagebox.showerror(
+                title='Error',
+                message='No text selected!')
 
     def clear_textbox(self, event, widget, original_text):
         if widget.get(1.0, 'end-1c') == original_text:
@@ -435,8 +454,9 @@ class MainApplication(tk.Frame):
             self.checkvar = False
         else:
             self.checkvar = True
-            if self.data_model.output_df is not None:
-                self.on_run_regex()
+
+        if self.data_model.output_df is not None:
+            self.on_run_regex()
         self.refresh_model()
 
     def on_radio_click(self):
