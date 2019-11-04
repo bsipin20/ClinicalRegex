@@ -57,15 +57,23 @@ class MainApplication(tk.Frame):
             'r_encoding' : 'utf-8',
             'preserve_header' : True
         }
+        
         phrases = [p.strip() for p in self.phrases.split(",")]
-
-
 
         self.model = Model(options_=opts,file_location_=file_loc,keywords_=phrases)
 
-        first_note = self.model.first()
+        if self.checkvar:
+
+            self.num_notes = self.model.get_num_notes_positive()
+
+
+        else:
+
+            self.num_notes = self.model.get_num_notes()
+
+        first_note,index = self.model.first(self.checkvar)
     
-        self.display_output_note(first_note)
+        self.display_output_note(first_note,index)
 
 
     def write_out_output_csv(self):
@@ -78,19 +86,16 @@ class MainApplication(tk.Frame):
 
         self.model.write_output("output.dta",self.checkvar)
 
-
-
-    def display_output_note(self,current_note_row):
+    def display_output_note(self,current_note_row,index):
 
         """ displays highlighting """ 
 
-        current_note_text= current_note_row['data']
-        current_patient_id = current_note_row['metadata']['empi']
-        match_indices = current_note_row['matches']
+        current_note_text= current_note_row['text']
+        current_patient_id = current_note_row['empi']
+        match_indices = ast.literal_eval(current_note_row['matches'])
 
-        self.number_label.config(text='%d of %d' % (self.model.get_index()+ 1, self.model.get_length(self.checkvar)))
+        self.number_label.config(text='%d of %d' % (index + 1, self.num_notes))
         self.patient_num_label.config(text='Patient ID: %s' % self.model.get_patient_id())
-
 
         tag_start = '1.0'
 
@@ -98,9 +103,8 @@ class MainApplication(tk.Frame):
 
         self.pttext.config(state=tk.NORMAL)
         self.pttext.delete(1.0, tk.END)
-        self.pttext.insert(tk.END, " ".join(current_note_text))
+        self.pttext.insert(tk.END, current_note_text)
         self.pttext.config(state=tk.DISABLED)
-        print(match_indices)
 
 
         for start, end in match_indices:
@@ -123,19 +127,18 @@ class MainApplication(tk.Frame):
 
     def on_prev(self):
 
-        current_note_row = self.model.prev()
-        self.display_output_note(current_note_row)
-        
+        current_note_row,reported_index = self.model.prev(self.checkvar)
+        self.display_output_note(current_note_row,reported_index)
         
     def on_next(self):
         annotation = self.ann_textbox.get()
+
         if len(annotation) > 0:
 
             self.model.write_to_annotation(annotation)
 
-        current_note_row= self.model.next()
-        self.display_output_note(current_note_row)
- 
+        current_note_row,reported_index = self.model.next(self.checkvar)
+        self.display_output_note(current_note_row,reported_index)
 
     ## GUI helper methods
     def clear_textbox(self, event, widget, original_text):
@@ -148,13 +151,27 @@ class MainApplication(tk.Frame):
         else:
             self.show_regex_options()
 
+
     def on_positive_checkbox_click(self, event, widget):
         if self.checkvar:
             self.checkvar = False
+            self.num_notes = self.model.get_num_notes()
+            note,index = self.model.current(self.checkvar)
+            self.display_output_note(note,index)
+
         else:
+
             self.checkvar = True
+            self.num_notes = self.model.get_num_notes_positive()
+            print(self.num_notes)
+            note,index = self.model.current(self.checkvar)
+            print(note['extracted_value'])
+            self.display_output_note(note,index)
+
+
+
         
-        self.model.refresh(self.checkvar)
+        #self.model.refresh(self.checkvar)
 
     def hide_regex_options(self):
         self.note_key_entry_label.grid_remove()
@@ -378,8 +395,6 @@ class MainApplication(tk.Frame):
 
         output_button = tk.Button(entry_frame, text='To Stata', width=8, command=self.write_out_output_stata)
         output_button.grid(column=0, row=4, sticky='nw')
-
-
 
 
 
