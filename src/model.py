@@ -10,15 +10,15 @@ class DataModel:
         self.output_fname = None
         self.output_df = None
         self.display_df = None
+        self.save_df = None
         self.current_row_index = None
         self.num_notes = None
         self.annotation_key = 'ANNOTATION'
 
     def write_to_annotation(self):
-        if self.output_df is None or self.current_row_index is None:
+        if self.save_df is None or self.current_row_index is None:
             return
-
-        self.output_df.to_csv(self.output_fname, index=False)
+        self.save_df.to_csv(self.output_fname, index=False)
 
     def get_annotation(self):
         if self.annotation_key in self.output_df:

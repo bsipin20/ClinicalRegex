@@ -8,9 +8,6 @@ import re
 import time
 import os
 
-RPDR_NOTE_KEYWORD = 'NOTE'
-RPDR_PATIENT_KEYWORD = 'EMPI'
-
 
 class MainApplication(tk.Frame):
     def __init__(self, master):
@@ -19,13 +16,14 @@ class MainApplication(tk.Frame):
         self.master = master
         self.setup_interface(master)
         self.data_model = DataModel()
-        self.note_key = RPDR_NOTE_KEYWORD
-        self.patient_key = RPDR_PATIENT_KEYWORD
         self.checkvar = False
 
     # Set up button click methods
     def on_select_file(self):
+        self.disable_button()
         self.load_annotation = False
+        self.data_model = DataModel()
+        self.checkvar = False
         file = filedialog.askopenfilename(title="Select File")
         if file:
             self.data_model.input_fname = file
@@ -148,6 +146,7 @@ class MainApplication(tk.Frame):
             return
 
         self.enable_button()
+        self.load_button.config(state='disabled')
 
     def on_load_annotation(self):
         if not self.data_model.input_fname or '.csv' not in self.data_model.input_fname:
@@ -155,7 +154,7 @@ class MainApplication(tk.Frame):
                 title="Error",
                 message="Please select an input file using the 'Select File' button.")
             return
-
+        self.phrases = {}
         self.load_annotation = True
         self.regex_button.config(state='disabled')
         self.data_model.output_df = pd.read_csv(
@@ -202,6 +201,13 @@ class MainApplication(tk.Frame):
         output_fname = self.regex_label.get()
         self.refresh_viewer(output_fname)
 
+    def disable_button(self):
+        self.prev_button.config(state='disabled')
+        self.next_button.config(state='disabled')
+        self.add_ann_button.config(state='disabled')
+        self.del_ann_button.config(state='disabled')
+        self.save_button.config(state='disabled')
+
     # Functions that change display
     def refresh_viewer(self, output_fname):
         def clean_phrase(phrase):
@@ -211,7 +217,8 @@ class MainApplication(tk.Frame):
             cleaned = re.sub(r'\r', '', cleaned)
             return str(cleaned.strip())
 
-        if not self.load_annotation:
+        # run regex
+        if 1 > 0:
             try:
                 self.data_model.output_df = pd.read_csv(
                     self.data_model.input_fname, usecols=[
@@ -226,15 +233,23 @@ class MainApplication(tk.Frame):
                                 self.phrases[i]) > 0:
                             phrases.extend(self.phrases[i].split(','))
                             self.data_model.output_df['L%d_' %
-                                                      i + self.label_name[i]] = None
+                                                      i + self.label_name[i]] = 0
+                            self.data_model.output_df['L%d_' %
+                                                      i + self.label_name[i] + '_span'] = None
                             self.data_model.output_df['L%d_' %
                                                       i + self.label_name[i] + '_text'] = None
                     self.data_model.output_df['regex'] = self.data_model.output_df[self.note_key].apply(
                         lambda x: 1 if any(re.search(p, x.lower()) for p in phrases) else 0)
+                    self.data_model.nokeyword_df = self.data_model.output_df[self.data_model.output_df['regex'] == 0].reset_index(
+                        drop=True)
                     self.data_model.output_df = self.data_model.output_df[self.data_model.output_df['regex'] == 1].reset_index(
                         drop=True)
                     self.data_model.output_df = self.data_model.output_df.drop(columns=[
                         'regex'])
+                    self.data_model.nokeyword_df = self.data_model.nokeyword_df.drop(columns=[
+                        'regex'])
+                else:
+                    self.data_model.nokeyword_df = []
             except BaseException:
                 messagebox.showerror(
                     title="Error",
@@ -347,11 +362,17 @@ class MainApplication(tk.Frame):
             text += '{}'.format(self.pttext.get(tags[i], tags[i + 1]))
             match += '{},{}'.format(start, end)
         current_row_index = self.data_model.display_df.index[self.data_model.current_row_index]
-        self.data_model.output_df.at[current_row_index, label_name] = match
+        self.data_model.output_df.at[current_row_index, label_name] = 1
+        self.data_model.output_df.at[current_row_index,
+                                     label_name + '_span'] = match
         self.data_model.output_df.at[current_row_index,
                                      label_name + '_text'] = text
 
     def on_save_annotation(self):
+        if self.data_model.output_fname[-4:] not in ['.csv', '.dta']:
+            messagebox.showerror(
+                title='Error',
+                message='Did you key in the correct CSV or DTA output filename?')
         for i in range(1, 4):
             if self.phrases[i] != self.original_regex_text and len(
                     self.phrases[i]) > 0:
@@ -363,7 +384,11 @@ class MainApplication(tk.Frame):
                     self.label_name[i])
                 self.data_model.output_df['K%d_' %
                                           i + str(self.phrases[i])] = ''
-
+        if len(self.data_model.nokeyword_df) > 0:
+            self.data_model.save_df = pd.concat(
+                [self.data_model.output_df, self.data_model.nokeyword_df], axis=0, sort=False)
+        else:
+            self.data_model.save_df = self.data_model.output_df
         self.data_model.write_to_annotation()
 
     def on_prev(self):
@@ -401,7 +426,6 @@ class MainApplication(tk.Frame):
         else:
             self.pttext.tag_remove(keyword, pos_start, pos_end)
 
-    # GUI helper methods
     def clear_textbox(self, event, widget, original_text):
         if widget.get(1.0, 'end-1c') == original_text:
             widget.delete(1.0, 'end-1c')
@@ -411,6 +435,8 @@ class MainApplication(tk.Frame):
             self.checkvar = False
         else:
             self.checkvar = True
+            if self.data_model.output_df is not None:
+                self.on_run_regex()
         self.refresh_model()
 
     def on_radio_click(self):
