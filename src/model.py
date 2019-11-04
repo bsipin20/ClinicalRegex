@@ -98,18 +98,26 @@ class Model(object):
 
 
         elif file_location_.split(".")[1] == "csv":
+            try:
 
 
-            with open(file_location_) as f:
-                a = [{k: v for k, v in row.items()}
-                    for row in csv.DictReader(f)]
+                with open(file_location_) as f:
+                    a = [{k: v for k, v in row.items()}
+                        for row in csv.DictReader(f)]
 
-                a[options_['patient_id']] = a['empi']
-                a[options_['note_key']] = a['text']
+                    a[options_['patient_id']] = a['empi']
+                    a[options_['note_key']] = a['text']
 
-                self.all_notes = a
+                    self.all_notes = a
 
-                self.current_index = ast.literal_eval(self.all_notes[0]['last_row'])
+                    self.current_index = ast.literal_eval(self.all_notes[0]['last_row'])
+            except TypeError:
+                t = ReadRPDR(options=options_,file_location=file_location_)
+
+                self.all_notes = self.process_all_notes(t,keywords_)
+                self.all_notes = self.filter_positives(self.all_notes)
+
+
 
 
 
@@ -260,6 +268,7 @@ class Model(object):
         file_ending = filename.split(".")[1]
         df = pd.DataFrame(self.all_notes)
         df['last_row'] = self.current_index
+        df = df.drop(columns="positive_index")
         if file_ending == "csv":
             df.to_csv(filename)
         elif file_ending == "dta":

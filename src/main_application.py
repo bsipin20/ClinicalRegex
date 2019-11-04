@@ -92,7 +92,6 @@ class MainApplication(tk.Frame):
 
         self.model.write_output(filename)
 
-        #self.model.write_output("output.dta",self.checkvar)
 
     def display_output_note(self,current_note_row,index):
 
