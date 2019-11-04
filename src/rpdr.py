@@ -48,11 +48,7 @@ class ReadRPDR(ReadDelimTXT):
         # this bool is to make sure the file is valid
         valid = False
         # open the file to validate file and get fields
-        self.cached_index  = 0
-        self.current_index = 0
         self.cache = []
-
-
 
 
         try:

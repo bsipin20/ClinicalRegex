@@ -57,7 +57,14 @@ class MainApplication(tk.Frame):
 
         opts = {
             'r_encoding' : 'utf-8',
-            'preserve_header' : True
+            'preserve_header' : True,
+            'patient_id' : self.patient_id_entry.get(),
+            'note_key' : self.note_key_entry.get(),
+            'rpdr' :self.rpdr_checkbox.var.get()
+
+
+
+
         }
         
         phrases = [p.strip() for p in self.phrases.split(",")]
@@ -342,6 +349,7 @@ class MainApplication(tk.Frame):
         checkbox_var = tk.IntVar()
         self.rpdr_checkbox = tk.Checkbutton(right_options_frame, padx=10, anchor='e', font=labelfont, text='RPDR format', variable=checkbox_var, bg=right_bg_color)
         self.rpdr_checkbox.var = checkbox_var
+
         self.rpdr_checkbox.select()
         self.rpdr_checkbox.bind("<Button-1>", lambda event: self.on_checkbox_click(event, self.rpdr_checkbox))
         self.rpdr_checkbox.grid(column=1, row=0, sticky='e')

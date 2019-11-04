@@ -46,20 +46,75 @@ class Model(object):
     def __init__(self,options_,file_location_,keywords_):
         """ initializes RPDR generator """ 
 
-        print(file_location_)
         self.current_index = 0
         
-        if file_location_.split(".")[1] == "csv":
+        if (file_location_.split(".")[1] == "csv") and not (options_['rpdr']):
+            print(file_location_)
+
+            with open(file_location_) as f:
+                a = [{k: v for k, v in row.items()}
+                    for row in csv.DictReader(f)]
+
+
+            numbered  = enumerate(a)
+
+            self.all_notes = list()
+
+            for i,note in numbered:
+
+
+                clean_words = _process_raw(note[options_['note_key']].split(" ")),
+
+
+                match_indices = _extract_phrase_from_notes(keywords_,clean_words[0]),
+                matches = match_indices[0]
+
+
+                #new_note['empi'] = note[options_['patient_id']]
+                #new_note['matches'] = str(matches),
+                #new_note['extracted_value'] = 0,
+                #new_note['text'] = note[options_['note_key']]
+                #new_note['total_index'] = i
+                new_note = {
+
+                    'empi' : note[options_['patient_id']],
+                    'matches' : str(matches),
+                    'extracted_value' : 0,
+                    'text' : note[options_['note_key']],
+                    'total_index' : i
+
+                }
+
+                self.all_notes.append(new_note)
+
+
+
+
+            self.current_index = 0
+            self.all_notes = self.filter_positives(self.all_notes)
+
+
+
+
+
+        elif file_location_.split(".")[1] == "csv":
 
 
             with open(file_location_) as f:
                 a = [{k: v for k, v in row.items()}
                     for row in csv.DictReader(f)]
+
+                a[options_['patient_id']] = a['empi']
+                a[options_['note_key']] = a['text']
+
                 self.all_notes = a
+
                 self.current_index = ast.literal_eval(self.all_notes[0]['last_row'])
 
+
+
         else: 
-            t = ReadRPDR(options=options_,file_location=file_location_).read_data()
+            t = ReadRPDR(options=options_,file_location=file_location_)
 
             self.all_notes = self.process_all_notes(t,keywords_)
             self.all_notes = self.filter_positives(self.all_notes)
@@ -70,9 +125,7 @@ class Model(object):
         notes = []
         self.current_index = 0
 
-        numbered  = enumerate(t)
-
-        for i,note in numbered:
+        for i,note in enumerate(t.read_data()):
             new_note = copy.deepcopy(note)
             clean_words = _process_raw(new_note['data'])
             match_indices = _extract_phrase_from_notes(keywords,clean_words)
