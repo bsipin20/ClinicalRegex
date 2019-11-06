@@ -1,8 +1,12 @@
 import tkinter as tk
 from tkinter import font, filedialog, messagebox
-from model import DataModel
-from extract_values import run_regex
+from src.model import DataModel
+from src.extract_values import run_regex
+from src.rpdr import ReadRPDR
+from src.helpers import find_matches,_extract_phrase_from_notes,_process_raw,AnnotationLedger
+from src.model import Model
 import pandas as pd
+import os
 import ast
 
 
@@ -28,7 +32,7 @@ class MainApplication(tk.Frame):
             self.file_text.config(text=self.data_model.input_fname.split('/')[-1])
 
     def on_select_output_file(self):
-        output_fname = filedialog.askopenfilename(title="Select Output File")
+        self.output_fname = filedialog.askopenfilename(title="Select Output File")
 
         if output_fname:
             # Change note-key
@@ -38,123 +42,110 @@ class MainApplication(tk.Frame):
                 self.patient_key = self.patient_id_entry.get()
             self.refresh_viewer(output_fname)
 
-    def on_run_regex(self): 
-        if not self.data_model.input_fname:
-            # Warning
-            messagebox.showerror(title="Error", message="Please select an input file using the 'Select File' button.")
-            return
 
-        output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
+    def on_run_regex(self):
+        """ Passes clinician note file to Model """ 
 
-        # Retrieve phrases
-        phrases = self.regex_text.get(1.0, 'end-1c').strip()
-        if phrases == self.original_regex_text or len(phrases) == 0:
-            messagebox.showerror(title="Error", message="Please input comma-separated phrases to search for. ")
-            return
+        self.phrases = self.regex_text.get(1.0, 'end-1c').strip()
+
+        # GETS FILE NAMe, passes global path to ReadRPDR
+        file_loc = self.data_model.input_fname
+        self.dirname = os.path.dirname(file_loc)
+ 
+        #self.output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
 
 
-        #TODO clean
-        rpdr_checkbox = self.rpdr_checkbox.var.get()
-        if rpdr_checkbox == 0:
-            note_keyword = self.note_key_entry.get()
-            patient_keyword = self.patient_id_entry.get()
-            if not note_keyword:
-                messagebox.showerror(title='Error', message='Please input the column name for notes.')
-                return
-            if not patient_keyword:
-                messagebox.showerror(title='Error', message='Please input the column name for patient IDs.')
-                return
-            try:
-                run_regex(self.data_model.input_fname, phrases, output_fname, False, note_keyword, patient_keyword)
-                self.note_key = note_keyword
-                self.patient_key = patient_keyword
-            except:
-                messagebox.showerror(title="Error", message="Something went wrong, did you select an appropriately formatted file to perform the Regex on?")
-                return
-        else:
-            try:
-                run_regex(self.data_model.input_fname, phrases, output_fname)
-                self.note_key = RPDR_NOTE_KEYWORD
-                self.patient_key = RPDR_PATIENT_KEYWORD
-            except:
-                messagebox.showerror(title="Error", message="Something went wrong, did you select an appropriately formatted RPDR file to perform the Regex on?")
-                return
-        self.refresh_viewer(output_fname)
+        opts = {
+            'r_encoding' : 'utf-8',
+            'preserve_header' : True,
+            'patient_id' : self.patient_id_entry.get(),
+            'note_key' : self.note_key_entry.get(),
+            'rpdr' :self.rpdr_checkbox.var.get()
 
-    # Functions that change display
-    def refresh_viewer(self, output_fname):
-        self.data_model.output_fname = output_fname
-        self.data_model.output_df = pd.read_csv(self.data_model.output_fname,index_col=0, header=0, dtype=object)
-        print(self.data_model.output_df)
 
-        self.refresh_model()
 
-    def refresh_model(self):
-        self.data_model.current_row_index = 0
+
+        }
+        
+        phrases = [p.strip() for p in self.phrases.split(",")]
+
+        self.model = Model(options_=opts,file_location_=file_loc,keywords_=phrases)
+
         if self.checkvar:
-            self.data_model.display_df = self.data_model.output_df[self.data_model.output_df['EXTRACTED_VALUE'] == '1']
+
+            self.num_notes = self.model.get_num_notes_positive()
+
+
         else:
-            self.data_model.display_df = self.data_model.output_df.copy()
 
-        self.data_model.num_notes = self.data_model.display_df.shape[0]
-        self.regex_file_text.config(text=self.data_model.output_fname.split('/')[-1])
-        self.display_output_note()
+            self.num_notes = self.model.get_num_notes()
 
-    def display_output_note(self):
-        current_note_row = self.data_model.display_df.iloc[self.data_model.current_row_index]
-        print(current_note_row)
+        first_note,index = self.model.first(self.checkvar)
+    
+        self.display_output_note(first_note,index)
 
-        try:
-            current_note_text = current_note_row[self.note_key]
-        except:
-            messagebox.showerror(title='Error', message='Unable to retrieve note text. Did you select the correct key?')
-            return
 
-        try:
-            current_patient_id = current_note_row[self.patient_key]
-        except:
-            messagebox.showerror(title='Error', message='Unable to retrieve patient ID. Did you select the correct key?')
-            return
+    def write_out_output_csv(self):
+        #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
+        filename = self.regex_label.get()
+        filename = self.dirname + "/" + filename
 
-        self.number_label.config(text='%d of %d' % (self.data_model.current_row_index + 1, self.data_model.num_notes))
-        self.patient_num_label.config(text='Patient ID: %s' % current_patient_id)
+        self.model.write_output(filename)
 
-        match_indices = ast.literal_eval(current_note_row['MATCHES'])
+
+    def display_output_note(self,current_note_row,index):
+
+        """ displays highlighting """ 
+
+        current_note_text= current_note_row['text']
+        current_patient_id = current_note_row['empi']
+        match_indices = ast.literal_eval(current_note_row['matches'])
+
+        self.number_label.config(text='%d of %d' % (index + 1, self.num_notes))
+        self.patient_num_label.config(text='Patient ID: %s' % self.model.get_patient_id())
+
+        tag_start = '1.0'
+
+        # Add highlighting 
 
         self.pttext.config(state=tk.NORMAL)
         self.pttext.delete(1.0, tk.END)
         self.pttext.insert(tk.END, current_note_text)
         self.pttext.config(state=tk.DISABLED)
 
-        tag_start = '1.0'
-        # Add highlighting 
 
         for start, end in match_indices:
             pos_start = '{}+{}c'.format(tag_start, start)
             pos_end = '{}+{}c'.format(tag_start, end)
             self.pttext.tag_add('highlighted', pos_start, pos_end)
+
         self.show_annotation()
 
     def show_annotation(self):
-        self.ann_textbox.delete(0, tk.END)
-        self.ann_textbox.insert(0, self.data_model.get_annotation())
 
-    def on_save_annotation(self):
-        annotation = self.ann_textbox.get()
-        if len(annotation) > 0:
-            self.data_model.write_to_annotation(annotation)
+        self.ann_textbox.delete(0, tk.END)
+        try: 
+            view = self.model.get_annotation()
+        except KeyError:
+            view = ""
+        self.ann_textbox.insert(0, view)
+
+    #def on_save_annotation(self):
 
     def on_prev(self):
-        self.on_save_annotation()
-        if self.data_model.current_row_index > 0:
-            self.data_model.current_row_index -= 1
-        self.display_output_note()
+
+        current_note_row,reported_index = self.model.prev(self.checkvar)
+        self.display_output_note(current_note_row,reported_index)
         
     def on_next(self):
-        self.on_save_annotation()
-        if self.data_model.current_row_index < self.data_model.num_notes:
-            self.data_model.current_row_index += 1
-        self.display_output_note()
+        annotation = self.ann_textbox.get()
+
+        if len(annotation) > 0:
+
+            self.model.write_to_annotation(annotation)
+
+        current_note_row,reported_index = self.model.next(self.checkvar)
+        self.display_output_note(current_note_row,reported_index)
 
     ## GUI helper methods
     def clear_textbox(self, event, widget, original_text):
@@ -167,12 +158,27 @@ class MainApplication(tk.Frame):
         else:
             self.show_regex_options()
 
+
     def on_positive_checkbox_click(self, event, widget):
         if self.checkvar:
             self.checkvar = False
+            self.num_notes = self.model.get_num_notes()
+            note,index = self.model.current(self.checkvar)
+            self.display_output_note(note,index)
+
         else:
+
             self.checkvar = True
-        self.refresh_model()
+            self.num_notes = self.model.get_num_notes_positive()
+            print(self.num_notes)
+            note,index = self.model.current(self.checkvar)
+            print(note['extracted_value'])
+            self.display_output_note(note,index)
+
+
+
+        
+        #self.model.refresh(self.checkvar)
 
     def hide_regex_options(self):
         self.note_key_entry_label.grid_remove()
@@ -287,18 +293,7 @@ class MainApplication(tk.Frame):
         scrollbar.config(command=self.pttext.yview)
         scrollbar.grid(column=1, row=0, sticky='nsw')
         self.pttext.grid(column=0, row=0, padx=15, pady=15, sticky='nsew')
-<<<<<<< HEAD
-
-        self.pttext.tag_config('highlighted_1', background='skyblue')
-        self.pttext.tag_config('highlighted_2', background='wheat1')
-        self.pttext.tag_config('highlighted_3', background='DarkSeaGreen1')
-        self.pttext.tag_config('highlighted_4', background='pink1')
-
-
-
-=======
         self.pttext.tag_config('highlighted', background='gold')
->>>>>>> abfb36cf11c726ea9dbd0838a124e7d23e74c133
         self.pttext.bind("<1>", lambda event: self.pttext.focus_set())
         
         # Right button frame
@@ -323,11 +318,7 @@ class MainApplication(tk.Frame):
         
         # Right button container
         right_regex_frame = tk.Frame(right_frame, bg=right_bg_color)
-<<<<<<< HEAD
-        right_regex_frame.grid(column=0, row=4, padx=10, pady=10, sticky='nsew')
-=======
         right_regex_frame.grid(column=0, row=3, padx=10, pady=10, sticky='nsew')
->>>>>>> abfb36cf11c726ea9dbd0838a124e7d23e74c133
         right_regex_frame.grid_propagate(False)
         right_regex_frame.grid_columnconfigure(0, weight=1)
         right_regex_frame.grid_columnconfigure(1, weight=3)
@@ -357,6 +348,7 @@ class MainApplication(tk.Frame):
         checkbox_var = tk.IntVar()
         self.rpdr_checkbox = tk.Checkbutton(right_options_frame, padx=10, anchor='e', font=labelfont, text='RPDR format', variable=checkbox_var, bg=right_bg_color)
         self.rpdr_checkbox.var = checkbox_var
+
         self.rpdr_checkbox.select()
         self.rpdr_checkbox.bind("<Button-1>", lambda event: self.on_checkbox_click(event, self.rpdr_checkbox))
         self.rpdr_checkbox.grid(column=1, row=0, sticky='e')
@@ -403,5 +395,14 @@ class MainApplication(tk.Frame):
         self.ann_textbox = tk.Entry(entry_frame, font=textfont)
         self.ann_textbox.grid(column=0, row=1, sticky='e')
 
-        ann_button = tk.Button(entry_frame, text='Save', width=8, command=self.on_save_annotation)
-        ann_button.grid(column=0, row=2, sticky='nw')
+        #ann_button = tk.Button(entry_frame, text='Save Anno', width=8, command=self.on_save_annotation)
+        #ann_button.grid(column=0, row=2, sticky='nw')
+
+        output_button = tk.Button(entry_frame, text='Output File', width=8, command=self.write_out_output_csv)
+        output_button.grid(column=0, row=3, sticky='nw')
+
+        #output_button = tk.Button(entry_frame, text='To Stata', width=8, command=self.write_out_output_stata)
+        #output_button.grid(column=0, row=4, sticky='nw')
+
+
+

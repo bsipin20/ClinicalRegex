@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from main_application import MainApplication
+from src.main_application import MainApplication
 
 
 def main(): 
