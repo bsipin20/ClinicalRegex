@@ -24,7 +24,7 @@ class MainApplication(tk.Frame):
         self.load_annotation = False
         self.data_model = DataModel()
         self.checkvar = False
-        chkValue = tk.BooleanVar()
+        chkValue = tk.BooleanVar() 
         chkValue.set(False)
         self.positive_checkbox.config(var=chkValue)
 
@@ -87,12 +87,16 @@ class MainApplication(tk.Frame):
             self.patient_id_entry = tk.StringVar(self.right_options_frame)
             OPTIONS = pd.read_csv(
                 self.data_model.input_fname).columns.values.tolist()
-            if f == 'csv' or 'report_text' not in OPTIONS or 'empi' not in OPTIONS:
-                self.note_key_entry.set(OPTIONS[1])
-                self.patient_id_entry.set(OPTIONS[0])
-            else:
-                self.note_key_entry.set('report_text')
+            if 'empi' in OPTIONS:
                 self.patient_id_entry.set('empi')
+            else:
+                self.patient_id_entry.set(OPTIONS[0])
+            if 'report_text' in OPTIONS:
+                self.note_key_entry.set('report_text')
+            elif 'comments' in OPTIONS:
+                self.note_key_entry.set('comments')
+            else:
+                self.note_key_entry.set(OPTIONS[1])
             try:
                 self.note_key_entry_menu = tk.OptionMenu(
                     self.right_options_frame, self.note_key_entry, *OPTIONS)
@@ -241,11 +245,11 @@ class MainApplication(tk.Frame):
                         phrases.extend(self.phrases[i].split(','))
                         if not self.load_annotation:
                             self.data_model.output_df['L%d_' %
-                                                      i + self.label_name[i]] = 0
+                                                        i + self.label_name[i]] = 0
                             self.data_model.output_df['L%d_' %
-                                                      i + self.label_name[i] + '_span'] = None
+                                                        i + self.label_name[i] + '_span'] = None
                             self.data_model.output_df['L%d_' %
-                                                      i + self.label_name[i] + '_text'] = None
+                                                        i + self.label_name[i] + '_text'] = None
                 self.data_model.output_df['regex'] = self.data_model.output_df[self.note_key].apply(
                     lambda x: 1 if any(re.search(p, x.lower()) for p in phrases) else 0)
                 self.data_model.nokeyword_df = self.data_model.output_df[self.data_model.output_df['regex'] == 0].reset_index(
@@ -272,7 +276,7 @@ class MainApplication(tk.Frame):
         else:
             try:
                 self.data_model.current_row_index = self.data_model.output_df.index[
-                    self.data_model.output_df['L1_' + self.label_name[1]] == 0].tolist()[0]
+                    self.data_model.output_df['L1_' + self.label_name[1]]==0].tolist()[0]
             except BaseException:
                 self.data_model.current_row_index = 0
 
@@ -319,15 +323,8 @@ class MainApplication(tk.Frame):
         for i in range(1, 4):
             if self.phrases[i] != self.original_regex_text and len(
                     self.phrases[i]) > 0:
-                self.find_matches(
-                    self.phrases[i],
-                    "keyword_%d" %
-                    i,
-                    "L%d_" %
-                    i +
-                    self.label_name[i] +
-                    '_span',
-                    input_df)
+                self.find_matches(self.phrases[i], "keyword_%d" % i,
+                                  "L%d_" % i + self.label_name[i] + '_span', input_df)
 
         self.pttext.tag_raise("sel")
         self.length, l = {}, 0
@@ -441,19 +438,17 @@ class MainApplication(tk.Frame):
             else:
                 self.pttext.tag_remove(keyword, pos_start, pos_end)
         else:
-            messagebox.showerror(
+             messagebox.showerror(
                 title='Error',
-                message='No text selected!')
+                message='No text selected!')           
 
     def clear_textbox(self, event, widget, original_text):
         if widget.get(1.0, 'end-1c') == original_text:
             widget.delete(1.0, 'end-1c')
 
     def on_positive_checkbox_click(self, event, widget):
-        if self.checkvar:
-            self.checkvar = False
-        else:
-            self.checkvar = True
+        if self.checkvar: self.checkvar = False
+        else: self.checkvar = True
 
         if self.data_model.output_df is not None:
             self.on_run_regex()
