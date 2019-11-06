@@ -9,6 +9,36 @@ import numpy as np
 import pandas as pd
 import time
 
+def process_data(info):
+    """Generator for processing the data with the UC_PROPS"""
+
+    # go through the lines and perform any in-place modifications
+    for i, line in enumerate(info['data']):
+        # process user-specified properties  
+        if self.options['lowercase']:
+            info['data'][i] = line.lower()
+
+            # Remove blank lines
+    if self.options['ignore_blank_lines']:
+        info["data"] = [line for line in info["data"] if line.strip()]
+
+    # text wrapping
+    if self.wrap:
+        info["data"] = self.wrap.wrap(''.join(info['data']))
+        info["data"] = [line + "\n" for line in info["data"]]	# should not need to do this
+
+    if self.unwrapper:
+        # do not include the first line
+        unwrapped = self.unwrapper.process(''.join(info['data'][1:]))
+        info["data"] = [info["data"][0]] + self.unwrapper.render(unwrapped, "reflow").splitlines(True)
+        
+    return info
+
+def get_document( info):
+    document = ''.join(self.process_data(info)['data'])
+    return document
+
+
 
 def _remove_punctuation(s):
     return s.translate(None, string.punctuation)
@@ -161,11 +191,15 @@ class ClinicianNotes(object):
         phrase_matches.finalize_phrase_matches()
         return phrase_matches
 
+
     def _findMaches(self, note_phrase_matches, note_key):
+
         dict_list = []
         for note_phrase_match in note_phrase_matches:
+
             note = note_phrase_match.note_dict[self.note_keyword]
             matches = []
+
             for phrase_match in note_phrase_match.phrase_matches:
                 match_start = phrase_match.match_start
                 match_end = phrase_match.match_end
@@ -177,6 +211,7 @@ class ClinicianNotes(object):
                 matches.append((match_start, match_end))
 
         return matches
+
 
 
 PHRASE_TYPE_WORD = 0
