@@ -6,11 +6,8 @@ from src.rpdr import ReadRPDR
 from src.helpers import find_matches,_extract_phrase_from_notes,_process_raw,AnnotationLedger
 from src.model import Model
 import pandas as pd
+import os
 import ast
-
-
-
-
 
 
 RPDR_NOTE_KEYWORD = 'NOTE'
@@ -53,72 +50,67 @@ class MainApplication(tk.Frame):
 
         # GETS FILE NAMe, passes global path to ReadRPDR
         file_loc = self.data_model.input_fname
+        self.dirname = os.path.dirname(file_loc)
  
         #self.output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
 
 
         opts = {
             'r_encoding' : 'utf-8',
-            'preserve_header' : True
+            'preserve_header' : True,
+            'patient_id' : self.patient_id_entry.get(),
+            'note_key' : self.note_key_entry.get(),
+            'rpdr' :self.rpdr_checkbox.var.get()
+
+
+
+
         }
-
-        self.model = Model(options_=opts,file_location_=file_loc)
-        #ReadRPDR(options=opts,file_location=file_loc)
-
-        first_note = self.model.first()
         
-        self.display_output_note(first_note)
+        phrases = [p.strip() for p in self.phrases.split(",")]
+
+        self.model = Model(options_=opts,file_location_=file_loc,keywords_=phrases)
+
+        if self.checkvar:
+
+            self.num_notes = self.model.get_num_notes_positive()
+
+
+        else:
+
+            self.num_notes = self.model.get_num_notes()
+
+        first_note,index = self.model.first(self.checkvar)
+    
+        self.display_output_note(first_note,index)
 
 
     def write_out_output_csv(self):
         #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
+        filename = self.regex_label.get()
+        filename = self.dirname + "/" + filename
 
-        self.model.write_output("output.csv")
-
-    def write_out_output_stata(self):
-        #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
-
-        self.model.write_output("output.dta")
+        self.model.write_output(filename)
 
 
-
-    def display_output_note(self,current_note_row):
+    def display_output_note(self,current_note_row,index):
 
         """ displays highlighting """ 
 
+        current_note_text= current_note_row['text']
+        current_patient_id = current_note_row['empi']
+        match_indices = ast.literal_eval(current_note_row['matches'])
 
-
- 
-        #try:
-        current_note_text= current_note_row['data']
-        #except KeyError:
-        #    messagebox.showerror(title='Error', message='Unable to retrieve note text. Did you select the correct key?')
-        #    return
-
-
-
-        #try:
-
-            #current_patient_id = current_note_row[self.patient_key]
-        current_patient_id = current_note_row['metadata']['empi']
-
-        #except:
-        #    messagebox.showerror(title='Error', message='Unable to retrieve patient ID. Did you select the correct key?')
-        #    return
+        self.number_label.config(text='%d of %d' % (index + 1, self.num_notes))
+        self.patient_num_label.config(text='Patient ID: %s' % self.model.get_patient_id())
 
         tag_start = '1.0'
+
         # Add highlighting 
-
-        
-        cleaned_note = _process_raw(current_note_text)
-        phrases = [p.strip() for p in self.phrases.split(",")]
-
-
-        match_indices = _extract_phrase_from_notes(phrases,cleaned_note)
 
         self.pttext.config(state=tk.NORMAL)
         self.pttext.delete(1.0, tk.END)
-        self.pttext.insert(tk.END, " ".join(cleaned_note))
+        self.pttext.insert(tk.END, current_note_text)
         self.pttext.config(state=tk.DISABLED)
 
 
@@ -127,30 +119,33 @@ class MainApplication(tk.Frame):
             pos_end = '{}+{}c'.format(tag_start, end)
             self.pttext.tag_add('highlighted', pos_start, pos_end)
 
- 
+        self.show_annotation()
 
     def show_annotation(self):
-        self.ann_textbox.delete(0, tk.END)
-        view = self.current_note_row['data']
-        self.ann_textbox.insert(0, view)
-        #self.data_model.get_annotation())
 
-    def on_save_annotation(self):
-        annotation = self.ann_textbox.get()
-        if len(annotation) > 0:
-            self.model.write_to_annotation(annotation)
+        self.ann_textbox.delete(0, tk.END)
+        try: 
+            view = self.model.get_annotation()
+        except KeyError:
+            view = ""
+        self.ann_textbox.insert(0, view)
+
+    #def on_save_annotation(self):
 
     def on_prev(self):
 
-        current_note_row = self.model.prev()
-        self.display_output_note(current_note_row)
-        
+        current_note_row,reported_index = self.model.prev(self.checkvar)
+        self.display_output_note(current_note_row,reported_index)
         
     def on_next(self):
-        current_note_row = self.model.next()
+        annotation = self.ann_textbox.get()
 
-        self.display_output_note(current_note_row)
- 
+        if len(annotation) > 0:
+
+            self.model.write_to_annotation(annotation)
+
+        current_note_row,reported_index = self.model.next(self.checkvar)
+        self.display_output_note(current_note_row,reported_index)
 
     ## GUI helper methods
     def clear_textbox(self, event, widget, original_text):
@@ -163,12 +158,27 @@ class MainApplication(tk.Frame):
         else:
             self.show_regex_options()
 
+
     def on_positive_checkbox_click(self, event, widget):
         if self.checkvar:
             self.checkvar = False
+            self.num_notes = self.model.get_num_notes()
+            note,index = self.model.current(self.checkvar)
+            self.display_output_note(note,index)
+
         else:
+
             self.checkvar = True
-        self.refresh_model()
+            self.num_notes = self.model.get_num_notes_positive()
+            print(self.num_notes)
+            note,index = self.model.current(self.checkvar)
+            print(note['extracted_value'])
+            self.display_output_note(note,index)
+
+
+
+        
+        #self.model.refresh(self.checkvar)
 
     def hide_regex_options(self):
         self.note_key_entry_label.grid_remove()
@@ -322,7 +332,7 @@ class MainApplication(tk.Frame):
         regex_button.grid(column=0, row=1, sticky='sw')
 
         self.regex_label = tk.Entry(right_regex_frame, font=labelfont)
-        self.regex_label.insert(0, 'output.dta')
+        self.regex_label.insert(0, 'output.csv')
         self.regex_label.grid(column=1, row=1, sticky='se')
 
         # Right regex options container
@@ -338,6 +348,7 @@ class MainApplication(tk.Frame):
         checkbox_var = tk.IntVar()
         self.rpdr_checkbox = tk.Checkbutton(right_options_frame, padx=10, anchor='e', font=labelfont, text='RPDR format', variable=checkbox_var, bg=right_bg_color)
         self.rpdr_checkbox.var = checkbox_var
+
         self.rpdr_checkbox.select()
         self.rpdr_checkbox.bind("<Button-1>", lambda event: self.on_checkbox_click(event, self.rpdr_checkbox))
         self.rpdr_checkbox.grid(column=1, row=0, sticky='e')
@@ -384,16 +395,14 @@ class MainApplication(tk.Frame):
         self.ann_textbox = tk.Entry(entry_frame, font=textfont)
         self.ann_textbox.grid(column=0, row=1, sticky='e')
 
-        ann_button = tk.Button(entry_frame, text='Save Anno', width=8, command=self.on_save_annotation)
-        ann_button.grid(column=0, row=2, sticky='nw')
+        #ann_button = tk.Button(entry_frame, text='Save Anno', width=8, command=self.on_save_annotation)
+        #ann_button.grid(column=0, row=2, sticky='nw')
 
-        output_button = tk.Button(entry_frame, text='To Csv', width=8, command=self.write_out_output_csv)
+        output_button = tk.Button(entry_frame, text='Output File', width=8, command=self.write_out_output_csv)
         output_button.grid(column=0, row=3, sticky='nw')
 
-        output_button = tk.Button(entry_frame, text='To Stata', width=8, command=self.write_out_output_stata)
-        output_button.grid(column=0, row=4, sticky='nw')
-
-
+        #output_button = tk.Button(entry_frame, text='To Stata', width=8, command=self.write_out_output_stata)
+        #output_button.grid(column=0, row=4, sticky='nw')
 
 
 

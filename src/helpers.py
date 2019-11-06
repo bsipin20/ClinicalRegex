@@ -95,13 +95,6 @@ def _extract_phrase_from_notes(keywords,whole_note):
     pattern_strings = string_lookup["word"]
     note = " ".join(whole_note)
 
-
-
-        #note = str(note_dict[self.note_keyword])
-    #except KeyError:
-    #    print("Wrong Note Keyword entered")
-    #    raise
-
     phrase_matches = list()
 
     for phrase in keywords:
@@ -116,8 +109,6 @@ def _extract_phrase_from_notes(keywords,whole_note):
             try:
                 while True:
                     match = next(match_iter)
-                    #print(match.start())
-                    #print(match.end())
 
                     new_match =  (match.start()+1,match.start() + len(phrase)+1)
 

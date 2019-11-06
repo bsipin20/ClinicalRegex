@@ -1,10 +1,9 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch,Mock
 #from src.rpdr import ReadRPDR
 
 
 from src.helpers import find_matches,_process_raw,_extract_phrase_from_notes,AnnotationLedger
-
 
 
 
@@ -67,40 +66,12 @@ class TestReadRPDR(unittest.TestCase):
         ret_val = _extract_phrase_from_notes(["activity"],test_note)
         self.assertEqual([(4,14)],ret_val)
 
-
-    def test_ledger(self):
-    
-
-        test_note= [1,2,3]
-        
-        cache = AnnotationLedger()
-        cache.push(1)
-
-        self.assertEqual(cache.pop(),1)
-
-    def test_ledger2(self):
-    
-
-        test_note= [1,2,3]
-        
-        cache = AnnotationLedger()
-        cache.push(1)
-        cache.push(2)
-        cache.pop()
- 
-
-        self.assertEqual(cache.pop(),1)
-
-
     def test_extract2(self):
         test_note = ["find","now","and","now"]
 
 
         ret_val = _extract_phrase_from_notes(["now"],test_note)
         self.assertEqual([(4,6),(12,14)],ret_val)
-
-
-
 
 
     def test_clean_note_phrase_newline(self):
@@ -128,9 +99,26 @@ class TestReadRPDR(unittest.TestCase):
         self.assertEqual(("test","","two","three",""),ret_val,msg=ret_val)
 
 
+from src.model import Model
+
+class TestModel(unittest.TestCase):
+
+    @patch('src.rpdr.ReadRPDR')
+    @patch('src.model.Model.output_dicts')
+    def test_write_output(self,mock_RPDR,model_data):
+        mock_RPDR.read_data.return_value = True
+        note_one = {'note' : "Note1", "id" : 1}
+        note_two = {'note' : "Note2", "id" : 2}
+        test_obj = Model().prepare_output()
+        #model_data.return_value = [note_one,note_two]
 
 
+        #mock_model.prepa= [1,2,3]
 
+        #result = test_obj(opts,file_location,keywords).prepare_output()
+        self.assertEqual(1,result)
+
+        
 
 
 
