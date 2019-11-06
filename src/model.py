@@ -88,9 +88,8 @@ class Model(object):
                 self.all_notes.append(new_note)
 
 
-
-
             self.current_index = 0
+
             self.all_notes = self.filter_positives(self.all_notes)
 
 
@@ -111,6 +110,7 @@ class Model(object):
                     self.all_notes = a
 
                     self.current_index = ast.literal_eval(self.all_notes[0]['last_row'])
+
             except TypeError:
                 t = ReadRPDR(options=options_,file_location=file_location_)
 
