@@ -428,6 +428,7 @@ class MainApplication(tk.Frame):
                     self.phrases[i]) > 0:
                 self.find_matches(self.phrases[i], "keyword_%d" % i,
                                   "L%d_" % i + self.label_name[i], input_df)
+<<<<<<< HEAD
 
         self.pttext.tag_raise("sel")
         self.length, l = {}, 0
@@ -461,6 +462,8 @@ class MainApplication(tk.Frame):
                     self.phrases[i]) > 0:
                 self.find_matches(self.phrases[i], "keyword_%d" % i,
                                   "L%d_" % i + self.label_name[i] + '_span', input_df)
+=======
+>>>>>>> parent of 22669b5... fix load annotation
 
         self.pttext.tag_raise("sel")
         self.length, l = {}, 0
@@ -608,27 +611,28 @@ class MainApplication(tk.Frame):
         self.modify_annotation('delete')
 
     def modify_annotation(self, action):
-        if self.pttext.tag_ranges(tk.SEL):
-            if self.label == 1:
-                keyword = "keyword_1"
-            elif self.label == 2:
-                keyword = "keyword_2"
-            else:
-                keyword = "keyword_3"
-            s0 = self.pttext.index("sel.first").split('.')
-            s1 = self.pttext.index("sel.last").split('.')
-            pos_start = '{}.{}'.format(*s0)
-            pos_end = '{}.{}'.format(*s1)
-            self.pttext.tag_remove(tk.SEL, "1.0", tk.END)
-            if action == 'add':
-                self.pttext.tag_add(keyword, pos_start, pos_end)
-            else:
-                self.pttext.tag_remove(keyword, pos_start, pos_end)
+        if self.label == 1:
+            keyword = "keyword_1"
+        elif self.label == 2:
+            keyword = "keyword_2"
         else:
+<<<<<<< HEAD
              messagebox.showerror(
                 title='Error',
                 message='No text selected!')           
 
+=======
+            keyword = "keyword_3"
+        s0 = self.pttext.index("sel.first").split('.')
+        s1 = self.pttext.index("sel.last").split('.')
+        pos_start = '{}.{}'.format(*s0)
+        pos_end = '{}.{}'.format(*s1)
+        self.pttext.tag_remove(tk.SEL, "1.0", tk.END)
+        if action == 'add':
+            self.pttext.tag_add(keyword, pos_start, pos_end)
+        else:
+            self.pttext.tag_remove(keyword, pos_start, pos_end)
+>>>>>>> parent of 22669b5... fix load annotation
 
     def clear_textbox(self, event, widget, original_text):
         if widget.get(1.0, 'end-1c') == original_text:
