@@ -48,12 +48,17 @@ class Model(object):
 
         self.current_index = 0
         
-        if (file_location_.split(".")[1] == "csv") and not (options_['rpdr']):
+        if (file_location_.split(".")[1] != "txt") and not (options_['rpdr']):
             print(file_location_)
 
-            with open(file_location_) as f:
-                a = [{k: v for k, v in row.items()}
-                    for row in csv.DictReader(f)]
+            if file_location_.split(".")[1] == "csv":
+                a = pd.read_csv(file_location_).to_dict("records")
+            elif 'xls' in file_location_.split(".")[1]:
+                a = pd.read_excel(file_location_).to_dict("records")
+            else:
+                messagebox.showerror(title="Error",
+                message="Did you select a CSV or XLS or RPDR file?")
+                return
 
 
             numbered  = enumerate(a)
@@ -62,8 +67,7 @@ class Model(object):
 
             for i,note in numbered:
 
-
-                clean_words = _process_raw(note[options_['note_key']].split(" ")),
+                clean_words = _process_raw(str(note[options_['note_key']]).split(" ")),
 
 
                 match_indices = _extract_phrase_from_notes(keywords_,clean_words[0]),
@@ -90,20 +94,24 @@ class Model(object):
 
 
 
-        elif file_location_.split(".")[1] == "csv":
+        elif file_location_.split(".")[1] != "txt":
             try:
 
+                if file_location_.split(".")[1] == "csv":
+                    a = pd.read_csv(file_location_).to_dict("records")
+                elif 'xls' in file_location_.split(".")[1]:
+                    a = pd.read_excel(file_location_).to_dict("records")
+                else:
+                    messagebox.showerror(title="Error",
+                    message="Did you select a CSV or XLS or RPDR file?")
+                    return
 
-                with open(file_location_) as f:
-                    a = [{k: v for k, v in row.items()}
-                        for row in csv.DictReader(f)]
+                a[options_['patient_id']] = a['empi']
+                a[options_['note_key']] = a['text']
 
-                    a[options_['patient_id']] = a['empi']
-                    a[options_['note_key']] = a['text']
+                self.all_notes = a
 
-                    self.all_notes = a
-
-                    self.current_index = ast.literal_eval(self.all_notes[0]['last_row'])
+                self.current_index = ast.literal_eval(self.all_notes[0]['last_row'])
 
             except TypeError:
                 t = ReadRPDR(options=options_,file_location=file_location_)
