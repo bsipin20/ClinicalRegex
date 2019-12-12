@@ -51,20 +51,6 @@ CONFIG.read(CONFIG_PATH)
 # create the GUI package logger constant
 LOGGER = logging.getLogger('log')
 
-# dynamically add files to __all__
-# get all of the files in this directory
-#for f in os.listdir(os.path.dirname(__file__)):
-#    # make sure it's a module
-#    file_list = f.split('.')
-#    if f.startswith('_') or 'py' not in file_list[-1]:
-#        continue
-#    # get rid of extension
-#    file = file_list[0]
-#    # import module
-#    mod = importlib.import_module('cdc.gui.{}'.format(file))
-#    # append to all
-#    __all__.append(file)
-
 
 TIME_FORMAT = CONFIG.get('GUI', 'gui_log_timestamp', fallback='%H:%M:%S - %m-%d-%Y')
 CONFIG = configparser.ConfigParser()

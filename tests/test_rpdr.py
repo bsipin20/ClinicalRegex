@@ -17,26 +17,6 @@ def test_IO():
     file_location = 'test_deidentified_rpdr_format.txt'
     t = Model(opts,file_location,"Patient")
     print(t.notes)
-    
-#    #t = ReadRPDR(options=opts,file_location='test_deidentified_rpdr_format.txt').read_data()
-#    all_notes = []
-#    for i in t:
-#        new_note = copy.deepcopy(i)
-#        all_notes.append(new_note)
-#
-#    test = all_notes[1]
-#
-#    #t = ReadRPDR().find_matches('
-#    #`t = ReadRPDR(options=opts,file_location='/home/brian-tp/Downloads/ ARE1__080519005036102066_MGH_Vis.txt').read_data()
-#
-#    #first_note = next(t)
-#    #look = _process_raw(first_note['data'])
-#    #matches = find_matches('Patient',look)
-#    #matches = _extract_phrase_from_notes('Patient',look)
-
-    
-
-
 
 
 

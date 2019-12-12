@@ -69,12 +69,6 @@ class Model(object):
                 match_indices = _extract_phrase_from_notes(keywords_,clean_words[0]),
                 matches = match_indices[0]
 
-
-                #new_note['empi'] = note[options_['patient_id']]
-                #new_note['matches'] = str(matches),
-                #new_note['extracted_value'] = 0,
-                #new_note['text'] = note[options_['note_key']]
-                #new_note['total_index'] = i
                 new_note = {
 
                     'empi' : note[options_['patient_id']],

@@ -8,22 +8,6 @@ from src.helpers import find_matches,_process_raw,_extract_phrase_from_notes,Ann
 
 
 class TestReadRPDR(unittest.TestCase):
-#    def testfind_matches(self):
-#        ret_val = find_matches("stuff","123 stuff 678")
-#        self.assertEqual([(3,7)],ret_val)
-#
-#    def test_find_long_matches(self):
-#        ret_val = find_matches(["stuff"],"123 stuff 678")
-#        self.assertEqual([(4,8)],ret_val)
-#
-#    def test_find_long_matches_newline(self):
-#        ret_val = find_matches(["stuff"],"123 stuff 678 stuff ")
-#        self.assertEqual([(4,8),(14,18)],ret_val)
-#
-#    def testfind_matches_multi_doublespace(self):
-#        ret_val = find_matches(["stuff"],"123  stuff 678 stuff ")
-#        self.assertEqual([(5,9),(15,19)],ret_val)
-
 
     def test_find_matches(self):
         test_note = ['The','patient','not','very','patient']
@@ -110,40 +94,7 @@ class TestModel(unittest.TestCase):
         note_one = {'note' : "Note1", "id" : 1}
         note_two = {'note' : "Note2", "id" : 2}
         test_obj = Model().prepare_output()
-        #model_data.return_value = [note_one,note_two]
-
-
-        #mock_model.prepa= [1,2,3]
-
-        #result = test_obj(opts,file_location,keywords).prepare_output()
         self.assertEqual(1,result)
-
-        
-
-
-
-    #def test_clean_note_phrase_(self):
-    #    with patch.object(ReadRPDR,"__init__",lambda x,y,z: None): 
-    #        m = ReadRPDR(None,None)
-    #        ret_val = clean_note_phrase("car aaa car")
-    #        self.assertEqual("stuff",ret_val)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":

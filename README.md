@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# ClinicalRegex
-=======
 # ClinicalRegex
 
 
@@ -45,4 +42,3 @@ The program will then go through each note. Enter annotated value, press "Save" 
 ![alt text](https://user-images.githubusercontent.com/22480551/54787607-9bdb5900-4c02-11e9-8fd5-7cabc9b009b1.png)
 
 Repeat this through each note until the end of the file 
->>>>>>> abfb36cf11c726ea9dbd0838a124e7d23e74c133

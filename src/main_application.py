@@ -52,8 +52,6 @@ class MainApplication(tk.Frame):
         file_loc = self.data_model.input_fname
         self.dirname = os.path.dirname(file_loc)
  
-        #self.output_fname = '/'.join(self.data_model.input_fname.split('/')[:-1]) + '/' + self.regex_label.get()
-
 
         opts = {
             'r_encoding' : 'utf-8',
@@ -86,7 +84,6 @@ class MainApplication(tk.Frame):
 
 
     def write_out_output_csv(self):
-        #output_fname = filedialog.asksaveasfile(title="Select Output File",filetypes=("
         filename = self.regex_label.get()
         filename = self.dirname + "/" + filename
 
@@ -130,7 +127,6 @@ class MainApplication(tk.Frame):
             view = ""
         self.ann_textbox.insert(0, view)
 
-    #def on_save_annotation(self):
 
     def on_prev(self):
 
@@ -170,15 +166,9 @@ class MainApplication(tk.Frame):
 
             self.checkvar = True
             self.num_notes = self.model.get_num_notes_positive()
-            print(self.num_notes)
             note,index = self.model.current(self.checkvar)
-            print(note['extracted_value'])
             self.display_output_note(note,index)
 
-
-
-        
-        #self.model.refresh(self.checkvar)
 
     def hide_regex_options(self):
         self.note_key_entry_label.grid_remove()
@@ -395,14 +385,10 @@ class MainApplication(tk.Frame):
         self.ann_textbox = tk.Entry(entry_frame, font=textfont)
         self.ann_textbox.grid(column=0, row=1, sticky='e')
 
-        #ann_button = tk.Button(entry_frame, text='Save Anno', width=8, command=self.on_save_annotation)
-        #ann_button.grid(column=0, row=2, sticky='nw')
 
         output_button = tk.Button(entry_frame, text='Output File', width=8, command=self.write_out_output_csv)
         output_button.grid(column=0, row=3, sticky='nw')
 
-        #output_button = tk.Button(entry_frame, text='To Stata', width=8, command=self.write_out_output_stata)
-        #output_button.grid(column=0, row=4, sticky='nw')
 
 
 
